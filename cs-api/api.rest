@@ -1,6 +1,6 @@
 @baseUrl = http://localhost:3000
-@id = f6046448-4bbe-498c-9a44-a34a7b5e74f3
-@idRemove = 14c4a04e-6088-43bd-aac0-edbb86de6ff0
+@id = fcf3b32f-c953-4925-8209-4d185d062a18
+@idRemove = dc40427b-aa11-4069-af57-519d565abf1d
 
 ### List Users
 GET {{baseUrl}}/users

@@ -20,8 +20,7 @@ async function bootstrap() {
       //ignora campos extras, só se "importa" com campos que estão mapeados no dto
       whitelist: true,
       // retorna erro se campos extras forem enviados
-        // forbidNonWhitelisted: true,
-
+      forbidNonWhitelisted: true,
       // Converte o json recebido para uma instancia da classe DTO correspondente
       transform: true,
     }),

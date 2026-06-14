@@ -13,7 +13,6 @@ export class CreateUserDto {
     @MaxLength(40)
     email!: string;
 
-
     @ApiProperty({
         description: "The password of user",
         example: "1234",

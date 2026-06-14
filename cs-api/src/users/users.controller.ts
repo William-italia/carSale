@@ -15,18 +15,16 @@ export class UsersController {
     ) {}
 
 
-    @Get()
+    @Get()                                    
     @ApiOkResponse({type: ListUsersResponseDto})
     findAllUsers(): unknown {
         return this.usersService.find();
     }
 
     @Get(':id')
-    //documentando os parametros
     @ApiParam({ name: 'id', type: String, description: 'UUID of user', example: '70a11139-62ea-4ed8-8524-bbb455fb11fa' })
-    //documentando a resposta
     @ApiOkResponse({type: UserResponseDto})
-    findUser(@Param() param: FindUserParamDto): unknown
+    findUser(@Param() param: FindUserParamDto): Promise<UserResponseDto>
     {
         return this.usersService.findOne(param.id);
     }
@@ -34,7 +32,7 @@ export class UsersController {
     @Post()
     @ApiBody({type: CreateUserDto})
     @ApiCreatedResponse({type: UserResponseDto})
-    createUser(@Body() body: CreateUserDto): unknown {
+    createUser(@Body() body: CreateUserDto): Promise<UserResponseDto> {
         return this.usersService.create(body);
     }
 
@@ -45,7 +43,7 @@ export class UsersController {
     updateUser(
         @Param() param: FindUserParamDto,
         @Body() body: UpdateUserDto
-    ): unknown {
+    ): Promise<UserResponseDto> {
         return this.usersService.update(param.id, body);
     }
 

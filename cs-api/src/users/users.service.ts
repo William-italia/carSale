@@ -1,33 +1,51 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersRepository } from './repositories/users.repository';
-import { ListUsersResponseDto, UserResponseDto } from './dtos/user-response.dto';
-import { UserEntity } from './entities/user.entity';
-import { CreateUserDto } from './dtos/create-user.dto';
+import { CreateUserData } from './types/create-user-data';
+import { UserResponseDto } from './dtos/user-response.dto';
+import { UpdateUserData } from './types/update-user-data';
+import { UserMapper } from './mappers/user-mapper';
 
 @Injectable()
 export class UsersService {
 
     constructor(
-        private readonly usersRepo: UsersRepository
+        private readonly usersRepo: UsersRepository,
     ) {}
 
-    find(): unknown {
+    async find() {
         return this.usersRepo.find();
     }
 
-    findOne(id: string) {
-        return this.usersRepo.findOne(id);
+    async findOne(id: string) {
+        const user = await this.usersRepo.findOne(id);
+
+        if(!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        return UserMapper.toResponseDto(user);
     }
 
-    create(data) {
-        return this.usersRepo.create(data);
+    async create(data: CreateUserData): Promise<UserResponseDto> {
+
+        const user = await this.usersRepo.create(data);
+
+        return UserMapper.toResponseDto(user);
+
     }
 
-    update(id, data) {
-        return this.usersRepo.update(id, data);
+    async update(id: string, data: UpdateUserData): Promise<UserResponseDto> {
+                
+        const user = await this.usersRepo.update(id, data);
+
+        if(!user){
+            throw new NotFoundException('User not found');
+        }
+
+        return UserMapper.toResponseDto(user);
     }
 
-    remove(id) {
+    async remove(id: string) {
         return this.usersRepo.remove(id);
     }
 

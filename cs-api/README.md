@@ -126,4 +126,6 @@
 
 next steps:
  
-Usersrepository and service | class hashed | add column token in User entity
+finish UserService [business rules, checks values (email), etc..], create module of cryptography, auth;
+
+feat: implements usermapper, types of style userData for validation on service,  
