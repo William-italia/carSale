@@ -3,6 +3,7 @@ import { UserEntity } from "../entities/user.entity";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Injectable } from "@nestjs/common";
+import { CreateUserData } from "../types/create-user-data";
 
 @Injectable()
 export class TypeOrmUsersRepository extends UsersRepository {
@@ -22,7 +23,11 @@ export class TypeOrmUsersRepository extends UsersRepository {
         return this.repo.findOneBy({id});
     }
 
-    async create(body: UserEntity): Promise<UserEntity> {
+    async findOneByEmail(email: string): Promise<UserEntity | null> {
+        return this.repo.findOneBy({email});
+    }
+
+    async create(body: CreateUserData): Promise<UserEntity> {
         return this.repo.save(body);
     }
 

@@ -7,8 +7,6 @@ export class UserMapper {
         return {
             id: user.id,
             email: user.email,
-            password: user.passwordHash,
-            tokenHash: user.tokenHash,
             createdAt: user.createdAt.toISOString(),
             updatedAt: user.updatedAt.toDateString()
         }

@@ -23,9 +23,14 @@ export class CreateUserDto {
     @IsString()
     @MinLength(4)
     @MaxLength(64)
-    passwordHash!: string;
+    password!: string;
 
-    @IsString()
-    tokenHash!: string; 
+
+    // @ApiProperty({
+    //     description: "token temp of user",
+    //     example: "teste"
+    // })
+    // @IsString()
+    // token!: string; 
 
 }

@@ -127,5 +127,3 @@
 next steps:
  
 finish UserService [business rules, checks values (email), etc..], create module of cryptography, auth;
-
-feat: implements usermapper, types of style userData for validation on service,  
