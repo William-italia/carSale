@@ -121,3 +121,9 @@
 - [ ] configuration logging  
 - [ ] deploy API  
 - [ ] configure CI/CD  
+
+----
+
+next steps:
+ 
+Usersrepository and service | class hashed | add column token in User entity

@@ -1,44 +1,34 @@
 import { Injectable } from '@nestjs/common';
-import { UserResponseDto } from './dtos/user-response.dto';
+import { UsersRepository } from './repositories/users.repository';
+import { ListUsersResponseDto, UserResponseDto } from './dtos/user-response.dto';
+import { UserEntity } from './entities/user.entity';
+import { CreateUserDto } from './dtos/create-user.dto';
 
 @Injectable()
 export class UsersService {
 
+    constructor(
+        private readonly usersRepo: UsersRepository
+    ) {}
 
-    constructor() {}
+    find(): unknown {
+        return this.usersRepo.find();
+    }
 
-    find() {
-        return [];
+    findOne(id: string) {
+        return this.usersRepo.findOne(id);
     }
-    findOne(id): UserResponseDto {
-        return {
-            id: 'uuid',
-            email: "meu email",
-            createdAt: "2026-06-12T10:00:00.000Z",
-            updatedAt: "2026-06-12T10:00:00.000Z"
-        }
 
+    create(data) {
+        return this.usersRepo.create(data);
     }
-    create(body) {
-          return {
-            id: 'uuid',
-            email: "meu email",
-            createdAt: "2026-06-12T10:00:00.000Z",
-            updatedAt: "2026-06-12T10:00:00.000Z"
-        }
+
+    update(id, data) {
+        return this.usersRepo.update(id, data);
     }
-    update(id, body) {
-          return {
-            id: 'uuid',
-            email: "meu email",
-            createdAt: "2026-06-12T10:00:00.000Z",
-            updatedAt: "2026-06-12T10:00:00.000Z"
-        }
-    }
+
     remove(id) {
-        console.log('to aqui');
+        return this.usersRepo.remove(id);
     }
-
-
 
 }

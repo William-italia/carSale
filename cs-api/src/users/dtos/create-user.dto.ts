@@ -24,6 +24,9 @@ export class CreateUserDto {
     @IsString()
     @MinLength(4)
     @MaxLength(64)
-    password!: string;
+    passwordHash!: string;
+
+    @IsString()
+    tokenHash!: string; 
 
 }
