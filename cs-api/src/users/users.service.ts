@@ -5,6 +5,8 @@ import { UpdateUserData } from './types/update-user-data';
 import { UserMapper } from './mappers/user-mapper';
 import { HashService } from '@src/cryptography/hash.service';
 import { CreateUserDto } from './dtos/create-user.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
+import { CreateUserData } from './types/create-user-data';
 
 @Injectable()
 export class UsersService {
@@ -15,28 +17,20 @@ export class UsersService {
     ) {}
 
     async find() {
-        return this.usersRepo.find();
+        const users = await this.usersRepo.find();
+        return UserMapper.toResponseListDto(users);
     }
 
     async findOne(id: string) {
         const user = await this.usersRepo.findOne(id);
-
-        if(!user) {
-            throw new NotFoundException('User not found');
-        }
-
         return UserMapper.toResponseDto(user);
     }
 
     async create(dto: CreateUserDto): Promise<UserResponseDto> {
 
-        const userExists = await this.usersRepo.findOneByEmail(dto.email);
+        await this.usersRepo.ensureEmailAvailable(dto.email)
 
-        if(userExists) {
-            throw new ConflictException('An account already exists with that email address');
-        }
-
-        const data = {
+        const data: CreateUserData = {
             email: dto.email,
             passwordHash: await this.bcrypt.hash(dto.password),
             // trocar quando JWT estiver funcionando
@@ -48,19 +42,28 @@ export class UsersService {
         return UserMapper.toResponseDto(user);
     }
 
-    async update(id: string, data: UpdateUserData): Promise<UserResponseDto> {
-                
-        const user = await this.usersRepo.update(id, data);
+    async update(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
 
-        if(!user){
-            throw new NotFoundException('User not found');
+        const user = await this.usersRepo.findOne(id);
+
+        const data:UpdateUserData = {}
+        
+        if(dto.email) {
+            await this.usersRepo.ensureEmailAvailable(dto.email, user.id);
+            data.email = dto.email;
         }
 
-        return UserMapper.toResponseDto(user);
+        if(dto.password) {
+            // posteriormente isso vai ter um endpoint proprio em auth/reset-password, ai eu faço um update decente
+            data.passwordHash = await this.bcrypt.hash(dto.password);
+        }
+
+        const updated = await this.usersRepo.update(user, data);
+        return UserMapper.toResponseDto(updated);
     }
 
-    async remove(id: string) {
-        return this.usersRepo.remove(id);
+    async remove(id: string): Promise<void> {
+        await this.usersRepo.remove(id);
     }
 
 }

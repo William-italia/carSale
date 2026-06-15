@@ -2,8 +2,11 @@ import { UsersRepository } from "./users.repository";
 import { UserEntity } from "../entities/user.entity";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
 import { CreateUserData } from "../types/create-user-data";
+import { UpdateUserData } from "../types/update-user-data";
+import { UserNotFoundError } from "@src/errors/user-not-found.error";
+import { EmailAlreadyExistsError } from "@src/errors/email-already-exists.error";
 
 @Injectable()
 export class TypeOrmUsersRepository extends UsersRepository {
@@ -19,24 +22,39 @@ export class TypeOrmUsersRepository extends UsersRepository {
         return this.repo.find();
     }
 
-    async findOne(id: string): Promise<UserEntity | null> {
-        return this.repo.findOneBy({id});
+    async findOne(id: string): Promise<UserEntity> {
+
+        const user = await this.repo.findOneBy({id})
+
+        if(!user) {
+            throw new UserNotFoundError();
+        }
+        
+        return user;
     }
 
-    async findOneByEmail(email: string): Promise<UserEntity | null> {
-        return this.repo.findOneBy({email});
+    async ensureEmailAvailable(email: string, ignoreId?: string): Promise<void> {
+
+        const user = await this.repo.findOneBy({email});
+
+        if(user && user.id !== ignoreId) {
+            throw new EmailAlreadyExistsError()
+        }
+
     }
 
     async create(body: CreateUserData): Promise<UserEntity> {
         return this.repo.save(body);
     }
 
-    async update(id: string, body: Partial<UserEntity>): Promise<UserEntity | null> {
-        await this.repo.update(id, body);
-        return this.findOne(id);
+    async update(user: UserEntity, body: UpdateUserData): Promise<UserEntity> {
+
+        Object.assign(user, body)
+        return this.repo.save(user);        
     }
 
     async remove(id: string): Promise<void> {
+        await this.findOne(id);
         await this.repo.delete(id);
     }
 

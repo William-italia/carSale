@@ -2,6 +2,9 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@src/app.module';
+import { UserNotFoundFilter } from './filters/user-not-found.filter';
+import { EmailAlreadyExistsFilter } from './filters/email-already-exists.filter';
+import { AllExceptionFilter } from './filters/all-exceptions-filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,6 +17,13 @@ async function bootstrap() {
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
+
+  app.useGlobalFilters(
+    new AllExceptionFilter(),
+    new UserNotFoundFilter(),
+    new EmailAlreadyExistsFilter(),
+  )
+
 
   app.useGlobalPipes(
     new ValidationPipe({

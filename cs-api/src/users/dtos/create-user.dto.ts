@@ -25,12 +25,4 @@ export class CreateUserDto {
     @MaxLength(64)
     password!: string;
 
-
-    // @ApiProperty({
-    //     description: "token temp of user",
-    //     example: "teste"
-    // })
-    // @IsString()
-    // token!: string; 
-
 }

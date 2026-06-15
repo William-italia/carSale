@@ -1,4 +1,4 @@
-import { UserResponseDto } from "../dtos/user-response.dto";
+import { ListUsersResponseDto, UserResponseDto } from "../dtos/user-response.dto";
 import { UserEntity } from "../entities/user.entity";
 
 export class UserMapper {
@@ -12,5 +12,17 @@ export class UserMapper {
         }
     }
 
+
+    static toResponseListDto(users: UserEntity[]): ListUsersResponseDto {
+        return {
+            data: users.map(user => this.toResponseDto(user))
+        //    data: users.map(user => ({
+        //         id: user.id,
+        //         email: user.email,
+        //         createdAt: user.createdAt.toISOString(),
+        //         updatedAt: user.updatedAt.toDateString()
+        //    }))
+        }
+    }
 
 }
