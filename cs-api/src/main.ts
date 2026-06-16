@@ -4,7 +4,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@src/app.module';
 import { UserNotFoundFilter } from './filters/user-not-found.filter';
 import { EmailAlreadyExistsFilter } from './filters/email-already-exists.filter';
-import { AllExceptionFilter } from './filters/all-exceptions-filter';
+import { AllExceptionFilter } from './filters/all-exceptions.filter';
+import { UnauthorizedFilter } from './filters/Unauthorized.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,6 +23,7 @@ async function bootstrap() {
     new AllExceptionFilter(),
     new UserNotFoundFilter(),
     new EmailAlreadyExistsFilter(),
+    new UnauthorizedFilter(),
   )
 
 

@@ -1,61 +1,53 @@
 import { UsersRepository } from "./users.repository";
 import { UserEntity } from "../entities/user.entity";
-import { Repository } from "typeorm";
+import { Not, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { CreateUserData } from "../types/create-user-data";
 import { UpdateUserData } from "../types/update-user-data";
-import { UserNotFoundError } from "@src/errors/user-not-found.error";
-import { EmailAlreadyExistsError } from "@src/errors/email-already-exists.error";
 
 @Injectable()
 export class TypeOrmUsersRepository extends UsersRepository {
 
     constructor (
         @InjectRepository(UserEntity)
-        private readonly repo: Repository<UserEntity>
+        private readonly repository: Repository<UserEntity>
     ) {
         super();
     }
 
     async find(): Promise<UserEntity[]> {
-        return this.repo.find();
+        return this.repository.find();
     }
 
-    async findOne(id: string): Promise<UserEntity> {
-
-        const user = await this.repo.findOneBy({id})
-
-        if(!user) {
-            throw new UserNotFoundError();
-        }
-        
-        return user;
+    async findById(id: string): Promise<UserEntity | null> {
+        return await this.repository.findOneBy({id})
     }
 
-    async ensureEmailAvailable(email: string, ignoreId?: string): Promise<void> {
+    async findByEmail(email: string): Promise<UserEntity | null> {
+        return await this.repository.findOneBy({email});
+    }
 
-        const user = await this.repo.findOneBy({email});
-
-        if(user && user.id !== ignoreId) {
-            throw new EmailAlreadyExistsError()
-        }
-
+    async findByEmailExcludingId(email:string, excludeId: string) {
+        return await this.repository.findOne({
+            where: {
+                email: email,
+                id: Not(excludeId)
+            }
+        })   
     }
 
     async create(body: CreateUserData): Promise<UserEntity> {
-        return this.repo.save(body);
+        return this.repository.save(body);
     }
 
     async update(user: UserEntity, body: UpdateUserData): Promise<UserEntity> {
-
-        Object.assign(user, body)
-        return this.repo.save(user);        
+        Object.assign(user, body);
+        return this.repository.save(user);
     }
 
     async remove(id: string): Promise<void> {
-        await this.findOne(id);
-        await this.repo.delete(id);
+        await this.repository.delete(id);
     }
 
 }

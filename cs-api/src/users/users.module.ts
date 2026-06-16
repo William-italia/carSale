@@ -19,6 +19,7 @@ import { CryptographyModule } from '@src/cryptography/cryptography.module';
       useClass: TypeOrmUsersRepository
     }
   ],
-  controllers: [UsersController]
+  controllers: [UsersController],
+  exports: [UsersRepository]
 })
 export class UsersModule {}

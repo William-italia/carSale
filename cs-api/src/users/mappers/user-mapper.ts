@@ -8,7 +8,7 @@ export class UserMapper {
             id: user.id,
             email: user.email,
             createdAt: user.createdAt.toISOString(),
-            updatedAt: user.updatedAt.toDateString()
+            updatedAt: user.updatedAt.toISOString()
         }
     }
 

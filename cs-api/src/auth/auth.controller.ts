@@ -1,0 +1,50 @@
+import { Controller, Post, Get, Patch, Body, Param, Delete, Req } from '@nestjs/common';
+import { ApiBody, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import { RegisterAuthDto } from './dtos/register-auth.dto';
+import { UserResponseDto } from '@src/users/dtos/user-response.dto';
+import { AuthService } from './auth.service';
+import { AuthResponseDto } from './dtos/auth-response.dto';
+
+@ApiTags('auth')
+@Controller('auth')
+export class AuthController {
+
+    constructor (
+        private readonly authService: AuthService
+    ) {}
+
+    @Post('register')
+    @ApiBody({type: RegisterAuthDto}) // nn sei pra q serve
+    @ApiCreatedResponse({type: AuthResponseDto}) // change for the future
+    register(@Body() body: RegisterAuthDto): Promise<AuthResponseDto> {
+        return this.authService.register(body);
+    }
+
+    @Post('login')
+    @ApiCreatedResponse({type: AuthResponseDto})
+    login(@Body() body: RegisterAuthDto) {
+        return this.authService.login(body);
+    }
+       
+    @Post('forgot-password') 
+    forgotPassword() {}
+
+    @Post('reset-password') 
+    resetPassword() {}
+
+    @Post('refresh-token') 
+    refreshToken() {}
+
+    // /me
+    @Get('me')
+    me(@Req() req: Request) {}
+
+    @Patch('me')
+    updateMe() {}
+
+    @Patch('me/password')
+    changePassword() {}
+  
+    @Delete('me')
+    deleteMe() {}
+}

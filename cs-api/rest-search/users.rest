@@ -6,7 +6,7 @@
 GET {{baseUrl}}/users
 
 ### Find One User
-GET {{baseUrl}}/users/{{idRemove}}
+GET {{baseUrl}}/users/{{id}}
 
 ### Create User
 POST {{baseUrl}}/users/
@@ -22,7 +22,7 @@ PATCH  {{baseUrl}}/users/{{id}}
 Content-Type: application/json
 
 {
-    "email": "williamitalia1@hotmail.com",
+    "email": "williamitalia@hotmail.com",
     "password": "batata123"
 }
 

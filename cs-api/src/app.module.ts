@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { UserEntity } from './users/entities/user.entity';
 import { CryptographyModule } from './cryptography/cryptography.module';
-import { HashService } from './cryptography/hash.service';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -15,6 +15,7 @@ import { HashService } from './cryptography/hash.service';
     }),
     UsersModule,
     CryptographyModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

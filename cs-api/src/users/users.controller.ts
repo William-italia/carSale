@@ -50,7 +50,7 @@ export class UsersController {
     @Delete(':id')
     @ApiParam({ name: 'id', type: String, description: 'UUID of user', example: 'a2695b96-fb9b-4d1d-a6cb-e7a7948aff81' })
     @ApiNoContentResponse({description: 'User removed with successfully'})
-    removeUser(@Param() param: FindUserParamDto): unknown {
+    removeUser(@Param() param: FindUserParamDto): Promise<void> {
         return this.usersService.remove(param.id);
     }
 

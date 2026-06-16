@@ -126,4 +126,5 @@
 
 next steps:
  
-finish UserService [business rules, checks values (email), etc..], create module of cryptography, auth;
+
+refactor repository and service user

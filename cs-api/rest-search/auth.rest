@@ -1,0 +1,25 @@
+@baseUrl = http://localhost:3000
+@id = f5ca7bc4-2c2e-475b-b5ea-4440270dde7d
+@idRemove = 557075e1-0f81-4126-a365-4d335b1a7c2d
+
+
+### REGISTER
+
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "email": "williamitalia1011111@hotmail.com",
+    "password": "12345",
+    "passwordConfim": "12345"
+}
+
+### LOGIN
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "williamitalia1@hotmail.com",
+    "password": "12345"
+}
+

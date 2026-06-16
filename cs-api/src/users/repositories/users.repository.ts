@@ -1,14 +1,17 @@
 import { UserEntity } from "../entities/user.entity";
 import { CreateUserData } from "../types/create-user-data";
+import { UpdateUserData } from "../types/update-user-data";
 
 
 export abstract class UsersRepository {
 
     abstract find(): Promise<UserEntity[]>;
-    abstract findOne(id: string): Promise<UserEntity>;
-    abstract ensureEmailAvailable(email: string, ignoreId?: string): Promise<void>;
+    abstract findById(id: string): Promise<UserEntity | null>;
+    abstract findByEmail(email: string, excludeId?: string): Promise<UserEntity | null>;
+    abstract findByEmailExcludingId(email: string, excludeId: string): Promise<UserEntity | null>;
     abstract create(body: CreateUserData): Promise<UserEntity>;
-    abstract update(user: UserEntity, body: Partial<UserEntity>): Promise<UserEntity>;
+    abstract update(user: UserEntity, body: UpdateUserData): Promise<UserEntity>;
     abstract remove(id: string): Promise<void>;
+
 
 }

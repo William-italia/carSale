@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UsersRepository } from './repositories/users.repository';
 import { UserResponseDto } from './dtos/user-response.dto';
 import { UpdateUserData } from './types/update-user-data';
@@ -7,28 +7,35 @@ import { HashService } from '@src/cryptography/hash.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { CreateUserData } from './types/create-user-data';
+import { UserNotFoundError } from '@src/errors/user-not-found.error';
+import { EmailAlreadyExistsError } from '@src/errors/email-already-exists.error';
 
 @Injectable()
 export class UsersService {
 
     constructor(
-        private readonly usersRepo: UsersRepository,
+        private readonly userRepository: UsersRepository,
         private readonly bcrypt: HashService
     ) {}
 
     async find() {
-        const users = await this.usersRepo.find();
+        const users = await this.userRepository.find();
         return UserMapper.toResponseListDto(users);
     }
 
     async findOne(id: string) {
-        const user = await this.usersRepo.findOne(id);
+        const user = await this.userRepository.findById(id);
+
+        if(!user) {
+            throw new UserNotFoundError();
+        }
+        
         return UserMapper.toResponseDto(user);
     }
 
     async create(dto: CreateUserDto): Promise<UserResponseDto> {
 
-        await this.usersRepo.ensureEmailAvailable(dto.email)
+        if(await this.userRepository.findByEmail(dto.email)) throw new EmailAlreadyExistsError();
 
         const data: CreateUserData = {
             email: dto.email,
@@ -37,33 +44,49 @@ export class UsersService {
             tokenHash: await this.bcrypt.hash('teste')
         }
 
-        const user = await this.usersRepo.create(data);
+        const user = await this.userRepository.create(data);
 
         return UserMapper.toResponseDto(user);
     }
 
     async update(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
 
-        const user = await this.usersRepo.findOne(id);
-
-        const data:UpdateUserData = {}
+        const user = await this.userRepository.findById(id);
         
-        if(dto.email) {
-            await this.usersRepo.ensureEmailAvailable(dto.email, user.id);
-            data.email = dto.email;
+        if(!user) {
+            throw new UserNotFoundError();
         }
 
+        if(dto.email) {            
+
+            const emailExists = await this.userRepository.findByEmailExcludingId(dto.email, user.id);
+
+            if(emailExists) {
+                throw new EmailAlreadyExistsError();
+            }
+        }
+        
         if(dto.password) {
-            // posteriormente isso vai ter um endpoint proprio em auth/reset-password, ai eu faço um update decente
-            data.passwordHash = await this.bcrypt.hash(dto.password);
+            dto.password = await this.bcrypt.hash(dto.password);
         }
 
-        const updated = await this.usersRepo.update(user, data);
+        const data: UpdateUserData = {
+            ...(dto.email && {email: dto.email}),
+            ...(dto.password && {passwordHash: dto.password})
+        };
+
+        const updated = await this.userRepository.update(user, data);
         return UserMapper.toResponseDto(updated);
     }
 
     async remove(id: string): Promise<void> {
-        await this.usersRepo.remove(id);
+        const user = await this.userRepository.findById(id);
+
+        if(!user) {
+            throw new UserNotFoundError();
+        }
+
+        await this.userRepository.remove(user.id);
     }
 
 }
