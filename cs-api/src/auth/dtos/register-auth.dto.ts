@@ -17,12 +17,10 @@ export class RegisterAuthDto {
         maxLength: 25,
         minLength: 8
     })
-
     @IsString()
-    @IsOptional()
     @MaxLength(25)
-    @MinLength(8)
-    name?: string
+    @MinLength(4)
+    name!: string
 
     @ApiProperty({
         description: "The password of user",

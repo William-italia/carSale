@@ -21,6 +21,7 @@ export class AuthResponseDto {
     example: {
         id: "123",
         email: "user@example.com",
+        name: "william",
         createdAt: "2026-06-16T12:00:00.000Z",
         updatedAt: "2026-06-16T12:00:00.000Z",
     }

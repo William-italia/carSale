@@ -13,17 +13,11 @@ export class UserResponseDto {
     }) 
     email!: string;
 
-    // @ApiProperty({
-    //     description: "The password of user",
-    //     example: "password"
-    // })
-    // passwordHash!: string;
-
-    // @ApiProperty({
-    //     description: "The TokenHash of user",
-    //     example: 'token hashed'
-    // })
-    // tokenHash?: string;
+    @ApiProperty({
+        description: "The nickName of user",
+        example: "william",
+    }) 
+    name!: string;
 
     @ApiProperty({
         description: "createdAt timeStamp",
@@ -43,15 +37,17 @@ export class ListUsersResponseDto  {
         type: UserResponseDto,
         isArray: true,
         example: [
-             {
+        {
         id: "a1b2c3",
         email: "john@example.com",
+        name: "john",
         createdAt: "2026-06-12T10:00:00.000Z",
         updatedAt: "2026-06-12T10:00:00.000Z",
       },
       {
         id: "d4e5f6",
         email: "mary@example.com",
+        name: "mary",
         createdAt: "2026-06-13T10:00:00.000Z",
         updatedAt: "2026-06-13T10:00:00.000Z",
       },

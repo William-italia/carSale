@@ -12,6 +12,17 @@ export class CreateUserDto {
     email!: string;
 
     @ApiProperty({
+        description: "The nickname of user",
+        example: "William italia",
+        maxLength: 25,
+        minLength: 8
+    })
+    @IsString()
+    @MaxLength(25)
+    @MinLength(4)
+    name!: string
+
+    @ApiProperty({
         description: "The password of user",
         example: "1234",
         minLength: 4,

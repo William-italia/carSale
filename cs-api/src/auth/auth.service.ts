@@ -17,6 +17,7 @@ export class AuthService {
 
     async register(dto: RegisterAuthDto): Promise<AuthResponseDto> {
 
+
         if(await this.userRepository.findByEmail(dto.email)) {
             throw new EmailAlreadyExistsError();
         }   
@@ -24,10 +25,12 @@ export class AuthService {
         if(dto.password != dto.passwordConfirm) {
             throw new ConflictException('Passwords dont match');
         }
-        // if email not exists, send email confirmation with code or confirmation link etc..
+
+        // send email confirmation with code or confirmation link etc..
 
         const user = await this.userRepository.create({
             email: dto.email,
+            name: dto.name,
             passwordHash: await this.bcrypt.hash(dto.password),
             tokenHash: await this.bcrypt.hash('12332'),
         });
@@ -40,6 +43,8 @@ export class AuthService {
 
     async login(dto: LoginAuthDto) {
 
+
+        // create method validateUser(email, password) in the usersService that validates the data and returns the user or null
         const user = await this.userRepository.findByEmail(dto.email);
 
         if(!user) {
@@ -61,6 +66,19 @@ export class AuthService {
             accessToken,
             refreshToken
         );
-
     }
+
+    async find(dto: string) {
+
+        const authHeader = dto.split(' ')[1];
+
+        if(!authHeader) {
+            console.log('vazio');
+        }
+
+        const user = this.userRepository.findById(authHeader);
+
+        return user;
+    }
+
 }

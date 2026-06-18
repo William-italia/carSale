@@ -1,25 +1,33 @@
-@baseUrl = http://localhost:3000
-@id = f5ca7bc4-2c2e-475b-b5ea-4440270dde7d
+@baseUrl = http://localhost:3000/auth
+@token = Bearer aa3c0ba4-929b-4b83-8dd1-6bfaf0a4a551
 @idRemove = 557075e1-0f81-4126-a365-4d335b1a7c2d
 
 
 ### REGISTER
 
-POST {{baseUrl}}/auth/register
+POST {{baseUrl}}/register
 Content-Type: application/json
 
 {
     "email": "williamitalia1011111@hotmail.com",
+    "name": "william italia",
     "password": "12345",
-    "passwordConfim": "12345"
+    "passwordConfirm": "12345"
 }
 
 ### LOGIN
-POST {{baseUrl}}/auth/login
+POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
-    "email": "williamitalia1@hotmail.com",
+    "email": "williamitalia@hotmail.com",
     "password": "12345"
 }
 
+### ME
+GET {{baseUrl}}/me
+Authorization: {{token}}
+
+### ME
+PATCH  {{baseUrl}}/me
+Authorization: {{token}}

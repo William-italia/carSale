@@ -1,9 +1,9 @@
-import { Controller, Post, Get, Patch, Body, Param, Delete, Req } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, Param, Headers, Delete, Req } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { RegisterAuthDto } from './dtos/register-auth.dto';
-import { UserResponseDto } from '@src/users/dtos/user-response.dto';
 import { AuthService } from './auth.service';
 import { AuthResponseDto } from './dtos/auth-response.dto';
+import { LoginAuthDto } from './dtos/login-auth.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -22,7 +22,7 @@ export class AuthController {
 
     @Post('login')
     @ApiCreatedResponse({type: AuthResponseDto})
-    login(@Body() body: RegisterAuthDto) {
+    login(@Body() body: LoginAuthDto) {
         return this.authService.login(body);
     }
        
@@ -37,14 +37,18 @@ export class AuthController {
 
     // /me
     @Get('me')
-    me(@Req() req: Request) {}
+    me(@Headers('authorization') auth: string) {
+        return this.authService.find(auth);
+    }
 
     @Patch('me')
-    updateMe() {}
+    updateMe(@Req() req: Request, @Body() body: {}) {
+        console.log(req.headers);
+    }
 
-    @Patch('me/password')
+    @Patch('me/password/:id')
     changePassword() {}
   
-    @Delete('me')
+    @Delete('me/:id')
     deleteMe() {}
 }
