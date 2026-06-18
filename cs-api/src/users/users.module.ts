@@ -20,6 +20,6 @@ import { CryptographyModule } from '@src/cryptography/cryptography.module';
     }
   ],
   controllers: [UsersController],
-  exports: [UsersRepository]
+  exports: [UsersRepository, UsersService]
 })
 export class UsersModule {}

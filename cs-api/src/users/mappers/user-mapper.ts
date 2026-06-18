@@ -13,16 +13,9 @@ export class UserMapper {
         }
     }
 
-
     static toResponseListDto(users: UserEntity[]): ListUsersResponseDto {
         return {
             data: users.map(user => this.toResponseDto(user))
-        //    data: users.map(user => ({
-        //         id: user.id,
-        //         email: user.email,
-        //         createdAt: user.createdAt.toISOString(),
-        //         updatedAt: user.updatedAt.toDateString()
-        //    }))
         }
     }
 

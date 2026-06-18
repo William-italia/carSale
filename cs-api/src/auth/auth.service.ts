@@ -1,61 +1,59 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { HashService } from '@src/cryptography/hash.service';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersRepository } from '@src/users/repositories/users.repository';
 import { RegisterAuthDto } from './dtos/register-auth.dto';
-import { EmailAlreadyExistsError } from '@src/errors/email-already-exists.error';
 import { AuthResponseDto } from './dtos/auth-response.dto';
 import { AuthMapper } from './mappers/auth.mapper';
 import { LoginAuthDto } from './dtos/login-auth.dto';
+import { UsersService } from '@src/users/users.service';
+import { UserResponseDto } from '@src/users/dtos/user-response.dto';
+import { UpdatePasswordAuthDto } from './dtos/update-password-auth.dto';
+import { UpdateUserDto } from '@src/users/dtos/update-user.dto';
+import { EmailValidationDto } from './dtos/email-auth.dto';
+import { UpdatePasswordDto } from '@src/users/dtos/update-password.dto';
+import { UserNotFoundError } from '@src/errors/user-not-found.error';
 
 @Injectable()
 export class AuthService {
 
     constructor (
         private readonly userRepository: UsersRepository,
-        private readonly bcrypt: HashService
+        private readonly usersService: UsersService,
     ) {}
 
-    async register(dto: RegisterAuthDto): Promise<AuthResponseDto> {
-
-
-        if(await this.userRepository.findByEmail(dto.email)) {
-            throw new EmailAlreadyExistsError();
-        }   
-
-        if(dto.password != dto.passwordConfirm) {
-            throw new ConflictException('Passwords dont match');
+    getToken(token: string): string {
+        
+        if (!token) {
+            throw new UnauthorizedException('Authorization header not provided');
         }
 
-        // send email confirmation with code or confirmation link etc..
+        const authHeader = token.split(' ')[1];
 
-        const user = await this.userRepository.create({
-            email: dto.email,
-            name: dto.name,
-            passwordHash: await this.bcrypt.hash(dto.password),
-            tokenHash: await this.bcrypt.hash('12332'),
-        });
-    
-        const accessToken = 'xxxx';
-        const refreshToken = 'yyyy';
+        if (!authHeader) {
+            throw new UnauthorizedException('Invalid authorization format');
+        }
 
-        return AuthMapper.toResponseDto(user, accessToken, refreshToken);
+        return authHeader;
     }
 
-    async login(dto: LoginAuthDto) {
+    async register(dto: RegisterAuthDto): Promise<void> {
+    
+        await this.usersService.create({
+            email: dto.email,
+            name: dto.name,
+            password: dto.password,
+            passwordConfirm: dto.passwordConfirm
+        });
 
+        // send email confirmation with code or confirmation link etc..
+        // then increment the active field in the users table to check if the account is active or null
+    }
 
-        // create method validateUser(email, password) in the usersService that validates the data and returns the user or null
-        const user = await this.userRepository.findByEmail(dto.email);
+    async login(dto: LoginAuthDto): Promise<AuthResponseDto> {
 
+        const user = await this.usersService.validateUser(dto);
+        
         if(!user) {
-            throw new UnauthorizedException('Email or Password invalid');
-        }
-
-        if(!(await this.bcrypt.compare(
-            dto.password, 
-            user.passwordHash
-        ))) {
-            throw new UnauthorizedException('Email or Password invalid');
+            throw new UnauthorizedException('Invalid credentials');
         }
 
         const accessToken = 'xxxx';
@@ -68,17 +66,47 @@ export class AuthService {
         );
     }
 
-    async find(dto: string) {
+    async find(header: string): Promise<UserResponseDto> {
 
-        const authHeader = dto.split(' ')[1];
-
-        if(!authHeader) {
-            console.log('vazio');
-        }
-
-        const user = this.userRepository.findById(authHeader);
+        const authHeader = this.getToken(header);
+        const user = await this.usersService.findOne(authHeader);
 
         return user;
+    }
+
+    async updateUser(header: string, dto: UpdateUserDto): Promise<UserResponseDto> {
+
+        const token = this.getToken(header);
+        const userUpdated = this.usersService.updateUser(token, dto);
+
+        return userUpdated;
+    }
+
+    async updatePassword(header: string, dto: UpdatePasswordAuthDto): Promise<void> {
+        const token = this.getToken(header);
+        await this.usersService.updateOwnPassword(token, dto);
+    }
+
+
+    async forgotPassword(dto: EmailValidationDto): Promise<string> {
+
+        const user = await this.userRepository.findByEmail(dto.email);
+
+        if(!user) {
+            throw new UserNotFoundError();
+        }
+
+        return `Bearer ${user.id}`;
+    }
+
+    async resetPassword(header: string, dto: UpdatePasswordDto): Promise<void> {
+        const token = this.getToken(header);
+        await this.usersService.updateUserPassword(token, dto);
+    }
+
+    async delete(header: string): Promise<void> {
+        const token = this.getToken(header);
+        await this.usersService.remove(token);
     }
 
 }

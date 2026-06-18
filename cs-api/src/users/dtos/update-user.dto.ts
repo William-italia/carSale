@@ -1,9 +1,31 @@
-import { PartialType } from "@nestjs/swagger";
-import { CreateUserDto } from "./create-user.dto";
+import { ApiProperty } from "@nestjs/swagger";
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {}
 
-// começar a ver parte de segurança pra implementar o jwt, 
-// fazer a parte do /me com id mesmo por enquanto dps é só trocar 
+export class UpdateUserDto {
+    @ApiProperty({
+            description: "The email of user",
+            example: "john@example.com",
+        })
+        @IsOptional()
+        @IsEmail()
+        @IsNotEmpty()
+        email?: string;
+    
+        @ApiProperty({
+            description: "The nickname of user",
+            example: "William italia",
+            maxLength: 25,
+            minLength: 8
+        })
+        @IsOptional()
+        @IsString()
+        @MaxLength(25)
+        @MinLength(4)
+        name?: string
 
-// 
+        // in the future, there will be an avatar/image field
+}
+
+// começar a ver parte de segurança pra implementar o jwt, -> vai fazer
+// fazer a parte do /me com id mesmo por enquanto dps é só trocar  [x]

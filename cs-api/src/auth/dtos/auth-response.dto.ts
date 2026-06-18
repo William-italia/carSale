@@ -2,8 +2,6 @@ import { ApiProperty } from "@nestjs/swagger";
 import { UserResponseDto } from "@src/users/dtos/user-response.dto";
 
 export class AuthResponseDto {
-
-
     @ApiProperty({
         description: "The token JWT of user",
         example: "xxxx"

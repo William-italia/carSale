@@ -1,9 +1,14 @@
-import { Controller, Post, Get, Patch, Body, Param, Headers, Delete, Req } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Post, Get, Patch, Body, Headers, Delete, HttpStatus, HttpCode } from '@nestjs/common';
+import { ApiCreatedResponse, ApiHeader, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegisterAuthDto } from './dtos/register-auth.dto';
 import { AuthService } from './auth.service';
 import { AuthResponseDto } from './dtos/auth-response.dto';
 import { LoginAuthDto } from './dtos/login-auth.dto';
+import { UpdatePasswordAuthDto } from './dtos/update-password-auth.dto';
+import { UpdateUserDto } from '@src/users/dtos/update-user.dto';
+import { UserResponseDto } from '@src/users/dtos/user-response.dto';
+import { EmailValidationDto } from './dtos/email-auth.dto';
+import { UpdatePasswordDto } from '@src/users/dtos/update-password.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -14,41 +19,64 @@ export class AuthController {
     ) {}
 
     @Post('register')
-    @ApiBody({type: RegisterAuthDto}) // nn sei pra q serve
-    @ApiCreatedResponse({type: AuthResponseDto}) // change for the future
-    register(@Body() body: RegisterAuthDto): Promise<AuthResponseDto> {
+    @ApiCreatedResponse({
+        description: 'User created successfully'
+    })
+    register(@Body() body: RegisterAuthDto): Promise<void> {
         return this.authService.register(body);
     }
 
     @Post('login')
-    @ApiCreatedResponse({type: AuthResponseDto})
-    login(@Body() body: LoginAuthDto) {
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({status: 200, type: AuthResponseDto})
+    login(@Body() body: LoginAuthDto): Promise<AuthResponseDto> {
         return this.authService.login(body);
     }
+    
+    @Post('refresh-token') 
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({status: 200, type: AuthResponseDto})
+    refreshToken() {}
        
     @Post('forgot-password') 
-    forgotPassword() {}
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({status: 200, description: 'Reset password link sent successfully!'})
+    forgotPassword(@Body() body: EmailValidationDto) {
+        return this.authService.forgotPassword(body);
+    }
 
     @Post('reset-password') 
-    resetPassword() {}
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({status: 200, description: 'Password updated successfully!'})
+    resetPassword(@Headers('authorization') auth: string, @Body() body: UpdatePasswordDto) {
+        return this.authService.resetPassword(auth, body);
+    }
 
-    @Post('refresh-token') 
-    refreshToken() {}
-
-    // /me
     @Get('me')
-    me(@Headers('authorization') auth: string) {
+    @ApiResponse({type: UserResponseDto})
+    me(@Headers('authorization') auth: string): Promise<UserResponseDto> {
         return this.authService.find(auth);
     }
 
     @Patch('me')
-    updateMe(@Req() req: Request, @Body() body: {}) {
-        console.log(req.headers);
+    @ApiResponse({type: UserResponseDto})
+    updateMe(@Headers('authorization') auth: string, @Body() body: UpdateUserDto): Promise<UserResponseDto> {
+        return this.authService.updateUser(auth, body);
     }
 
-    @Patch('me/password/:id')
-    changePassword() {}
+    @Patch('me/password')
+    @ApiResponse({
+    status: 200,
+    description: 'Password updated successfully'
+    })
+    changePassword(@Headers('authorization') auth: string, @Body() body: UpdatePasswordAuthDto): Promise<void> {
+        return this.authService.updatePassword(auth, body);
+    }
   
-    @Delete('me/:id')
-    deleteMe() {}
+    @Delete('me')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiResponse({description: 'User successfully removed!'})
+    deleteMe(@Headers('authorization') auth: string): Promise<void> {
+        return this.authService.delete(auth);
+    }
 }

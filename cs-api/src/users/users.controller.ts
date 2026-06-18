@@ -44,7 +44,7 @@ export class UsersController {
         @Param() param: FindUserParamDto,
         @Body() body: UpdateUserDto
     ): Promise<UserResponseDto> {
-        return this.usersService.update(param.id, body);
+        return this.usersService.updateUser(param.id, body);
     }
 
     @Delete(':id')

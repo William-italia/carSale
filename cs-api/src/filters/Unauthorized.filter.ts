@@ -1,6 +1,5 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpCode, HttpStatus } from "@nestjs/common";
 import { UnauthorizedError } from "@src/errors/Unauthorized.error";
-import { response } from "express";
 
 @Catch()
 export class UnauthorizedFilter implements ExceptionFilter {

@@ -1,16 +1,15 @@
 @baseUrl = http://localhost:3000/auth
-@token = Bearer aa3c0ba4-929b-4b83-8dd1-6bfaf0a4a551
+@token = Bearer 7a864011-4964-477b-a330-4eea68122b88
 @idRemove = 557075e1-0f81-4126-a365-4d335b1a7c2d
 
 
 ### REGISTER
-
 POST {{baseUrl}}/register
 Content-Type: application/json
 
 {
-    "email": "williamitalia1011111@hotmail.com",
-    "name": "william italia",
+    "email": "vanessa12@hotmail.com",
+    "name": "vanessa",
     "password": "12345",
     "passwordConfirm": "12345"
 }
@@ -20,14 +19,56 @@ POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
-    "email": "williamitalia@hotmail.com",
-    "password": "12345"
+    "email": "vanessa123@example.com",
+    "password": "123456"
 }
 
-### ME
+
+### FORGOT PASSWORD
+
+POST {{baseUrl}}/forgot-password
+Content-Type: application/json
+
+{
+    "email": "vanessa1@example.com"
+}
+
+### RESET PASSWORD
+POST {{baseUrl}}/reset-password
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+    "newPassword": "pass",
+    "confirmPassword": "pass"
+}
+
+### GET ME
 GET {{baseUrl}}/me
 Authorization: {{token}}
 
-### ME
+
+### UPDATE ME
 PATCH  {{baseUrl}}/me
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+    "email": "vanessa123@example.com"
+}
+
+
+### UPDATE MY PASSWORD
+PATCH  {{baseUrl}}/me/password
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+    "currentPassword": "pass",
+    "newPassword": "123456",
+    "confirmPassword": "123456"
+}
+
+### DELETE ME
+DELETE {{baseUrl}}/me
 Authorization: {{token}}

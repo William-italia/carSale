@@ -34,4 +34,16 @@ export class CreateUserDto {
     @MaxLength(14)
     password!: string;
 
+      @ApiProperty({
+        description: "The passwordConfirm of user",
+        example: "1234",
+        minLength: 4,
+        maxLength: 64,
+    })
+    @IsNotEmpty()
+    @IsString()
+    @MinLength(4)
+    @MaxLength(14)
+    passwordConfirm!: string;
+
 }
