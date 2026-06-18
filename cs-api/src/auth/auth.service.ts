@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UsersRepository } from '@src/users/repositories/users.repository';
 import { RegisterAuthDto } from './dtos/register-auth.dto';
 import { AuthResponseDto } from './dtos/auth-response.dto';
@@ -10,7 +10,6 @@ import { UpdatePasswordAuthDto } from './dtos/update-password-auth.dto';
 import { UpdateUserDto } from '@src/users/dtos/update-user.dto';
 import { EmailValidationDto } from './dtos/email-auth.dto';
 import { UpdatePasswordDto } from '@src/users/dtos/update-password.dto';
-import { UserNotFoundError } from '@src/errors/user-not-found.error';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +19,7 @@ export class AuthService {
         private readonly usersService: UsersService,
     ) {}
 
-    getToken(token: string): string {
+    extractToken(token: string): string {
         
         if (!token) {
             throw new UnauthorizedException('Authorization header not provided');
@@ -44,8 +43,7 @@ export class AuthService {
             passwordConfirm: dto.passwordConfirm
         });
 
-        // send email confirmation with code or confirmation link etc..
-        // then increment the active field in the users table to check if the account is active or null
+        // TODO: generate token and send email for verify 
     }
 
     async login(dto: LoginAuthDto): Promise<AuthResponseDto> {
@@ -53,7 +51,7 @@ export class AuthService {
         const user = await this.usersService.validateUser(dto);
         
         if(!user) {
-            throw new UnauthorizedException('Invalid credentials');
+             throw new UnauthorizedException('Invalid credentials');
         }
 
         const accessToken = 'xxxx';
@@ -68,7 +66,7 @@ export class AuthService {
 
     async find(header: string): Promise<UserResponseDto> {
 
-        const authHeader = this.getToken(header);
+        const authHeader = this.extractToken(header);
         const user = await this.usersService.findOne(authHeader);
 
         return user;
@@ -76,14 +74,14 @@ export class AuthService {
 
     async updateUser(header: string, dto: UpdateUserDto): Promise<UserResponseDto> {
 
-        const token = this.getToken(header);
+        const token = this.extractToken(header);
         const userUpdated = this.usersService.updateUser(token, dto);
 
         return userUpdated;
     }
 
     async updatePassword(header: string, dto: UpdatePasswordAuthDto): Promise<void> {
-        const token = this.getToken(header);
+        const token = this.extractToken(header);
         await this.usersService.updateOwnPassword(token, dto);
     }
 
@@ -93,19 +91,20 @@ export class AuthService {
         const user = await this.userRepository.findByEmail(dto.email);
 
         if(!user) {
-            throw new UserNotFoundError();
+            throw new NotFoundException('User not found!')
         }
 
+        // TODO: generate reset token and send email
         return `Bearer ${user.id}`;
     }
 
     async resetPassword(header: string, dto: UpdatePasswordDto): Promise<void> {
-        const token = this.getToken(header);
+        const token = this.extractToken(header);
         await this.usersService.updateUserPassword(token, dto);
     }
 
     async delete(header: string): Promise<void> {
-        const token = this.getToken(header);
+        const token = this.extractToken(header);
         await this.usersService.remove(token);
     }
 
