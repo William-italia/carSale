@@ -38,7 +38,8 @@ export class TypeOrmUsersRepository extends UsersRepository {
     }
 
     async create(body: CreateUserData): Promise<UserEntity> {
-        return this.repository.save(body);
+        const user = this.repository.create(body);
+        return this.repository.save(user);
     }
 
     async update(user: UserEntity, body: UpdateUserData): Promise<UserEntity> {
@@ -46,8 +47,8 @@ export class TypeOrmUsersRepository extends UsersRepository {
         return this.repository.save(user);
     }
 
-    async remove(id: string): Promise<void> {
-        await this.repository.delete(id);
+    async remove(user: UserEntity): Promise<void> {
+        await this.repository.remove(user);
     }
 
 }

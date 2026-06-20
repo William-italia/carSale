@@ -35,21 +35,7 @@ export class UsersService {
         }
         
         return UserMapper.toResponseDto(user);
-    }
-
-    async validateUser(dto: LoginAuthDto): Promise<UserEntity | null> {
-        
-        const userExists = await this.userRepository.findByEmail(dto.email);
-
-        if(!userExists) {
-            return null;
-        }
-
-        if(!(await this.bcrypt.compare(dto.password, userExists.passwordHash))) {
-            return null;
-        }
-        
-        return userExists;
+    
     }
 
 
@@ -66,7 +52,8 @@ export class UsersService {
             name: dto.name,
             passwordHash: await this.bcrypt.hash(dto.password),
             // TODO: refresh token hash
-            tokenHash: await this.bcrypt.hash('teste')
+            // tokenHash: null
+            tokenHash: 'test'
         });
 
         return UserMapper.toResponseDto(user);
@@ -152,7 +139,7 @@ export class UsersService {
             throw new NotFoundException('User not found!');
         }
 
-        await this.userRepository.remove(user.id);
+        await this.userRepository.remove(user);
 
         return;
     }

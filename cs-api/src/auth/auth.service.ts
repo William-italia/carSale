@@ -10,6 +10,8 @@ import { UpdatePasswordAuthDto } from './dtos/update-password-auth.dto';
 import { UpdateUserDto } from '@src/users/dtos/update-user.dto';
 import { EmailValidationDto } from './dtos/email-auth.dto';
 import { UpdatePasswordDto } from '@src/users/dtos/update-password.dto';
+import { BcryptHash } from '@src/cryptography/bcrypt-hash.service';
+import { UserEntity } from '@src/users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +19,7 @@ export class AuthService {
     constructor (
         private readonly userRepository: UsersRepository,
         private readonly usersService: UsersService,
+        private readonly bcrypt: BcryptHash
     ) {}
 
     extractToken(token: string): string {
@@ -44,15 +47,12 @@ export class AuthService {
         });
 
         // TODO: generate token and send email for verify 
+        return;
     }
 
     async login(dto: LoginAuthDto): Promise<AuthResponseDto> {
 
-        const user = await this.usersService.validateUser(dto);
-        
-        if(!user) {
-             throw new UnauthorizedException('Invalid credentials');
-        }
+        const user = await this.validateCredentials(dto);
 
         const accessToken = 'xxxx';
         const refreshToken = 'yyyy';
@@ -107,5 +107,24 @@ export class AuthService {
         const token = this.extractToken(header);
         await this.usersService.remove(token);
     }
+
+
+    private async validateCredentials(dto: LoginAuthDto): Promise<UserEntity> {
+        
+        const user = await this.userRepository.findByEmail(dto.email);
+
+        if(!user) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+
+        const isValidPassword = await this.bcrypt.compare(dto.password, user.passwordHash);
+
+        if(!isValidPassword) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+        
+        return user;
+    }
+
 
 }

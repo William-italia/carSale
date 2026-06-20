@@ -10,7 +10,7 @@ import { BcryptHash } from './bcrypt-hash.service';
         }
     ],
     exports: [
-        HashService
+        HashService,
     ]
 })
 export class CryptographyModule {}

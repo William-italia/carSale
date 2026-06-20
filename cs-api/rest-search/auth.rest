@@ -1,6 +1,6 @@
 @baseUrl = http://localhost:3000/auth
-@token = Bearer 7a864011-4964-477b-a330-4eea68122b88
-@idRemove = 557075e1-0f81-4126-a365-4d335b1a7c2d
+@token = Bearer 722b3641-d237-477c-8289-0494d532af83
+@idRemove = 722b3641-d237-477c-8289-0494d532af83
 
 
 ### REGISTER
@@ -8,7 +8,7 @@ POST {{baseUrl}}/register
 Content-Type: application/json
 
 {
-    "email": "vanessa12@hotmail.com",
+    "email": "vanessa1234@hotmail.com",
     "name": "vanessa",
     "password": "12345",
     "passwordConfirm": "12345"
@@ -54,7 +54,7 @@ Authorization: {{token}}
 Content-Type: application/json
 
 {
-    "email": "vanessa123@example.com"
+    "email": "vanessa123456@hotmail.com"
 }
 
 

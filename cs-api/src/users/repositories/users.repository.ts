@@ -11,6 +11,6 @@ export abstract class UsersRepository {
     abstract findByEmailExcludingId(email: string, excludeId: string): Promise<UserEntity | null>;
     abstract create(body: CreateUserData): Promise<UserEntity>;
     abstract update(user: UserEntity, body: UpdateUserData): Promise<UserEntity>;
-    abstract remove(id: string): Promise<void>;
+    abstract remove(user: UserEntity): Promise<void>;
     
 }

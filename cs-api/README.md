@@ -126,5 +126,4 @@
 
 next steps:
  
-
-refactor repository and service user
+create branch jwt and implement/refactor jwt in authModule

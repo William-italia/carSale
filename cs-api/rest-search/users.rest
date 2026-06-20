@@ -1,6 +1,6 @@
 @baseUrl = http://localhost:3000
-@id = 5adfc398-79e5-4526-a178-551202321a39
-@idRemove = 557075e1-0f81-4126-a365-4d335b1a7c2d
+@id = 5adfc398-79e5-4526-a178-551202321a31
+@idRemove = 9148ac71-281a-434b-9a57-90cf76d075cc
 
 ### List Users
 GET {{baseUrl}}/users
@@ -13,7 +13,7 @@ POST {{baseUrl}}/users/
 Content-Type: application/json
 
 {
-    "email": "williamitalia3@hotmail.com",
+    "email": "williamitalia31@hotmail.com",
     "name": "william",
     "password": "12345",
     "passwordConfirm": "12345" 
@@ -24,7 +24,7 @@ PATCH  {{baseUrl}}/users/{{id}}
 Content-Type: application/json
 
 {
-    "email": "robson@example.com",
+    "email": "robson1@example.com",
     "name": "robson silva"
 }
 
