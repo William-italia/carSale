@@ -44,6 +44,6 @@ export class CreateUserDto {
     @IsString()
     @MinLength(4)
     @MaxLength(14)
-    passwordConfirm!: string;
+    confirmPassword!: string;
 
 }

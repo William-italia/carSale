@@ -11,7 +11,7 @@ Content-Type: application/json
     "email": "vanessa1234@hotmail.com",
     "name": "vanessa",
     "password": "12345",
-    "passwordConfirm": "12345"
+    "confirmPassword": "12345"
 }
 
 ### LOGIN

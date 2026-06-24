@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UsersRepository } from '@src/users/repositories/users.repository';
 import { RegisterAuthDto } from './dtos/register-auth.dto';
 import { AuthResponseDto } from './dtos/auth-response.dto';
@@ -43,7 +43,7 @@ export class AuthService {
             email: dto.email,
             name: dto.name,
             password: dto.password,
-            passwordConfirm: dto.passwordConfirm
+            confirmPassword: dto.confirmPassword
         });
 
         // TODO: generate token and send email for verify 

@@ -5,10 +5,8 @@ import { UserMapper } from './mappers/user-mapper';
 import { HashService } from '@src/cryptography/hash.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { LoginAuthDto } from '@src/auth/dtos/login-auth.dto';
 import { UpdatePasswordDto } from './dtos/update-password.dto';
 import { UpdatePasswordAuthDto } from '@src/auth/dtos/update-password-auth.dto';
-import { UserEntity } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -43,7 +41,7 @@ export class UsersService {
 
         if(await this.userRepository.findByEmail(dto.email)) throw new ConflictException('Email already exists!');
 
-        if(dto.password != dto.passwordConfirm) {
+        if(dto.password != dto.confirmPassword) {
             throw new ConflictException('Passwords dont match');
         }
 

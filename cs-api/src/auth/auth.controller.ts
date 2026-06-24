@@ -18,6 +18,8 @@ export class AuthController {
         private readonly authService: AuthService
     ) {}
 
+
+    // signUp
     @Post('register')
     @ApiCreatedResponse({
         description: 'User created successfully'
@@ -26,6 +28,7 @@ export class AuthController {
         return this.authService.register(body);
     }
 
+    // signIn
     @Post('login')
     @HttpCode(HttpStatus.OK)
     @ApiResponse({status: 200, type: AuthResponseDto})
