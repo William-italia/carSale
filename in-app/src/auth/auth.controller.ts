@@ -1,4 +1,5 @@
-import { Controller, Post, Get, Patch, Body, Headers, Delete, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, Delete, HttpStatus, HttpCode, UseGuards, Request, Res } from '@nestjs/common';
+import type { Response } from 'express';
 import { ApiCreatedResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegisterAuthDto } from './dtos/register-auth.dto';
 import { AuthService } from './auth.service';
@@ -9,6 +10,8 @@ import { UpdateUserDto } from '@src/users/dtos/update-user.dto';
 import { UserResponseDto } from '@src/users/dtos/user-response.dto';
 import { EmailValidationDto } from './dtos/email-auth.dto';
 import { UpdatePasswordDto } from '@src/users/dtos/update-password.dto';
+import { authGuard } from './auth.guard';
+
 
 @ApiTags('auth')
 @Controller('auth')
@@ -20,20 +23,22 @@ export class AuthController {
 
 
     // signUp
-    @Post('register')
+    @Post('signUp')
     @ApiCreatedResponse({
         description: 'User created successfully'
     })
-    register(@Body() body: RegisterAuthDto): Promise<void> {
-        return this.authService.register(body);
+    signUp(@Body() body: RegisterAuthDto): Promise<void> {
+        return this.authService.signUp(body);
     }
 
     // signIn
-    @Post('login')
+    @Post('signIn')
     @HttpCode(HttpStatus.OK)
     @ApiResponse({status: 200, type: AuthResponseDto})
-    login(@Body() body: LoginAuthDto): Promise<AuthResponseDto> {
-        return this.authService.login(body);
+    signIn(
+        @Body() body: LoginAuthDto,
+    ): Promise<{access_token: string}> {
+        return this.authService.signIn(body);
     }
     
     @Post('refresh-token') 
@@ -48,38 +53,43 @@ export class AuthController {
         return this.authService.forgotPassword(body);
     }
 
+    @UseGuards(authGuard)
     @Post('reset-password') 
     @HttpCode(HttpStatus.OK)
     @ApiResponse({status: 200, description: 'Password updated successfully!'})
-    resetPassword(@Headers('authorization') auth: string, @Body() body: UpdatePasswordDto) {
-        return this.authService.resetPassword(auth, body);
+    resetPassword(@Request() req, @Body() body: UpdatePasswordDto) {
+        return this.authService.resetPassword(req.user, body);
     }
 
+    @UseGuards(authGuard)
     @Get('me')
     @ApiResponse({type: UserResponseDto})
-    me(@Headers('authorization') auth: string): Promise<UserResponseDto> {
-        return this.authService.find(auth);
+    me(@Request() req): Promise<UserResponseDto> {
+        return this.authService.find(req.user);
     }
 
+    @UseGuards(authGuard)
     @Patch('me')
     @ApiResponse({type: UserResponseDto})
-    updateMe(@Headers('authorization') auth: string, @Body() body: UpdateUserDto): Promise<UserResponseDto> {
-        return this.authService.updateUser(auth, body);
+    updateMe(@Request() req, @Body() body: UpdateUserDto): Promise<UserResponseDto> {
+        return this.authService.updateUser(req.user, body);
     }
 
+    @UseGuards(authGuard)
     @Patch('me/password')
     @ApiResponse({
     status: 200,
     description: 'Password updated successfully'
     })
-    changePassword(@Headers('authorization') auth: string, @Body() body: UpdatePasswordAuthDto): Promise<void> {
-        return this.authService.updatePassword(auth, body);
+    changePassword(@Request() req, @Body() body: UpdatePasswordAuthDto): Promise<void> {
+        return this.authService.updatePassword(req.user, body);
     }
   
+    @UseGuards(authGuard)
     @Delete('me')
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiResponse({description: 'User successfully removed!'})
-    deleteMe(@Headers('authorization') auth: string): Promise<void> {
-        return this.authService.delete(auth);
+    deleteMe(@Request() req): Promise<void> {
+        return this.authService.delete(req.user);
     }
 }

@@ -1,8 +1,7 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, Res, UnauthorizedException } from '@nestjs/common';
+import { Response } from 'express';
 import { UsersRepository } from '@src/users/repositories/users.repository';
 import { RegisterAuthDto } from './dtos/register-auth.dto';
-import { AuthResponseDto } from './dtos/auth-response.dto';
-import { AuthMapper } from './mappers/auth.mapper';
 import { LoginAuthDto } from './dtos/login-auth.dto';
 import { UsersService } from '@src/users/users.service';
 import { UserResponseDto } from '@src/users/dtos/user-response.dto';
@@ -12,6 +11,9 @@ import { EmailValidationDto } from './dtos/email-auth.dto';
 import { UpdatePasswordDto } from '@src/users/dtos/update-password.dto';
 import { BcryptHash } from '@src/cryptography/bcrypt-hash.service';
 import { UserEntity } from '@src/users/entities/user.entity';
+import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from './types/jwtpayload-auth.data';
+
 
 @Injectable()
 export class AuthService {
@@ -19,25 +21,11 @@ export class AuthService {
     constructor (
         private readonly userRepository: UsersRepository,
         private readonly usersService: UsersService,
-        private readonly bcrypt: BcryptHash
+        private readonly bcrypt: BcryptHash,
+        private readonly jwtService: JwtService,
     ) {}
 
-    extractToken(token: string): string {
-        
-        if (!token) {
-            throw new UnauthorizedException('Authorization header not provided');
-        }
-
-        const authHeader = token.split(' ')[1];
-
-        if (!authHeader) {
-            throw new UnauthorizedException('Invalid authorization format');
-        }
-
-        return authHeader;
-    }
-
-    async register(dto: RegisterAuthDto): Promise<void> {
+    async signUp(dto: RegisterAuthDto): Promise<void> {
     
         await this.usersService.create({
             email: dto.email,
@@ -50,39 +38,40 @@ export class AuthService {
         return;
     }
 
-    async login(dto: LoginAuthDto): Promise<AuthResponseDto> {
+    async signIn(dto: LoginAuthDto): Promise<{access_token: string}> {
 
         const user = await this.validateCredentials(dto);
 
-        const accessToken = 'xxxx';
-        const refreshToken = 'yyyy';
+        // TODO
+        // const refreshToken = 'yyyy';
 
-        return AuthMapper.toResponseDto(
-            user,
-            accessToken,
-            refreshToken
-        );
+        const payload = { sub: user.id }
+        const accessToken = await this.jwtService.signAsync<JwtPayload>(payload);
+
+        // res.cookie('refresh_token', 'token_aqui', {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === 'production',
+        //     sameSite: 'strict',
+        //     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 dias
+        // });
+
+        return {
+            access_token: accessToken
+        }
     }
 
-    async find(header: string): Promise<UserResponseDto> {
-
-        const authHeader = this.extractToken(header);
-        const user = await this.usersService.findOne(authHeader);
-
+    async find(payload: JwtPayload): Promise<UserResponseDto> {
+        const user = await this.usersService.findOne(payload.sub);
         return user;
     }
 
-    async updateUser(header: string, dto: UpdateUserDto): Promise<UserResponseDto> {
-
-        const token = this.extractToken(header);
-        const userUpdated = this.usersService.updateUser(token, dto);
-
+    async updateUser(payload: JwtPayload, dto: UpdateUserDto): Promise<UserResponseDto> {
+        const userUpdated = this.usersService.updateUser(payload.sub, dto);
         return userUpdated;
     }
 
-    async updatePassword(header: string, dto: UpdatePasswordAuthDto): Promise<void> {
-        const token = this.extractToken(header);
-        await this.usersService.updateOwnPassword(token, dto);
+    async updatePassword(payload: JwtPayload, dto: UpdatePasswordAuthDto): Promise<void> {
+        await this.usersService.updateOwnPassword(payload.sub, dto);
     }
 
 
@@ -98,14 +87,12 @@ export class AuthService {
         return `Bearer ${user.id}`;
     }
 
-    async resetPassword(header: string, dto: UpdatePasswordDto): Promise<void> {
-        const token = this.extractToken(header);
-        await this.usersService.updateUserPassword(token, dto);
+    async resetPassword(payload: JwtPayload, dto: UpdatePasswordDto): Promise<void> {
+        await this.usersService.updateUserPassword(payload.sub, dto);
     }
 
-    async delete(header: string): Promise<void> {
-        const token = this.extractToken(header);
-        await this.usersService.remove(token);
+    async delete(payload: JwtPayload): Promise<void> {
+        await this.usersService.remove(payload.sub);
     }
 
 

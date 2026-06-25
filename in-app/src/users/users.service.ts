@@ -33,7 +33,6 @@ export class UsersService {
         }
         
         return UserMapper.toResponseDto(user);
-    
     }
 
 
@@ -50,8 +49,8 @@ export class UsersService {
             name: dto.name,
             passwordHash: await this.bcrypt.hash(dto.password),
             // TODO: refresh token hash
-            // tokenHash: null
-            tokenHash: 'test'
+            tokenHash: null
+            // tokenHash: 'test'
         });
 
         return UserMapper.toResponseDto(user);

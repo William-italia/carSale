@@ -1,4 +1,4 @@
-import {Entity, Column, UpdateDateColumn, CreateDateColumn, PrimaryColumn, Generated, PrimaryGeneratedColumn, AfterInsert, AfterUpdate, AfterRemove, BeforeRemove } from "typeorm"
+import {Entity, Column, UpdateDateColumn, CreateDateColumn, PrimaryColumn, Generated, PrimaryGeneratedColumn } from "typeorm"
 
 
 @Entity('users')
@@ -15,8 +15,11 @@ export class UserEntity {
     @Column()
     passwordHash!: string;
 
-    @Column()
-    tokenHash?: string;
+    @Column({
+        type: 'text',
+        nullable: true
+    })
+    tokenHash!: string | null;
 
     @CreateDateColumn()
     createdAt!: Date;
@@ -24,18 +27,4 @@ export class UserEntity {
     @UpdateDateColumn()
     updatedAt!: Date;
 
-    @AfterInsert()
-    logInser() {
-        console.log('Inserted user with id: ' + this.id);
-    }
-
-    @AfterUpdate()
-    logUpdate() {
-        console.log('Update user with id: ' + this.id);
-    }
-
-    @BeforeRemove()
-    logRemove() {
-        console.log('delete user with id: ' + this.id);
-    }
 }
