@@ -1,6 +1,5 @@
 @baseUrl = http://localhost:3000/auth
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4MTI2ZDU2ZC1iMzkzLTQzM2YtOWRjMS1mZjUzZTI2NGZiM2QiLCJpYXQiOjE3ODI0MDU5NTMsImV4cCI6MTc4MjQwNjg1M30.rtFWkLQU_krBdzbiitCGGUf3Im2vApwSbcWn2Nbo95o
-@idRemove = 722b3641-d237-477c-8289-0494d532af83
+@token = Bearer {{login.response.body.access_token}}
 
 
 ### REGISTER
@@ -8,19 +7,21 @@ POST {{baseUrl}}/signUp
 Content-Type: application/json
 
 {
-    "email": "renata@hotmail.com",
-    "name": "renata",
+    "email": "livia@hotmail.com",
+    "name": "livia",
     "password": "12345",
     "confirmPassword": "12345"
 }
 
+
 ### LOGIN
+# @name login
 POST {{baseUrl}}/signIn
 Content-Type: application/json
 
 {
     "email": "livia@hotmail.com",
-    "password": "pass"
+    "password": "12345"
 }
 
 
@@ -54,7 +55,7 @@ Authorization: {{token}}
 Content-Type: application/json
 
 {
-    "name": "Livia Gomes"
+    "name": "Livia Italia"
 }
 
 

@@ -1,5 +1,9 @@
-import { Injectable, NotFoundException, Res, UnauthorizedException } from '@nestjs/common';
-import { Response } from 'express';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersRepository } from '@src/users/repositories/users.repository';
 import { RegisterAuthDto } from './dtos/register-auth.dto';
 import { LoginAuthDto } from './dtos/login-auth.dto';
@@ -12,106 +16,115 @@ import { UpdatePasswordDto } from '@src/users/dtos/update-password.dto';
 import { BcryptHash } from '@src/cryptography/bcrypt-hash.service';
 import { UserEntity } from '@src/users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from './types/jwtpayload-auth.data';
-
+import { TokenPayloadDto } from './dtos/token-payload.dto';
+import jwtConfig from './config/jwt.config';
+import type { ConfigType } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
+  constructor(
+    private readonly userRepository: UsersRepository,
+    private readonly usersService: UsersService,
+    private readonly bcrypt: BcryptHash,
 
-    constructor (
-        private readonly userRepository: UsersRepository,
-        private readonly usersService: UsersService,
-        private readonly bcrypt: BcryptHash,
-        private readonly jwtService: JwtService,
-    ) {}
+    @Inject(jwtConfig.KEY)
+    private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
+    private readonly jwtService: JwtService,
+  ) {}
 
-    async signUp(dto: RegisterAuthDto): Promise<void> {
-    
-        await this.usersService.create({
-            email: dto.email,
-            name: dto.name,
-            password: dto.password,
-            confirmPassword: dto.confirmPassword
-        });
+  async signUp(dto: RegisterAuthDto): Promise<void> {
+    await this.usersService.create({
+      email: dto.email,
+      name: dto.name,
+      password: dto.password,
+      confirmPassword: dto.confirmPassword,
+    });
 
-        // TODO: generate token and send email for verify 
-        return;
+    // TODO: generate token and send email for verify
+    return;
+  }
+
+  async signIn(dto: LoginAuthDto): Promise<{ access_token: string }> {
+    const user = await this.validateCredentials(dto);
+
+    // TODO
+    // const refreshToken = 'yyyy';
+
+    const accessToken = await this.jwtService.signAsync<TokenPayloadDto>(
+      {
+        sub: user.id,
+      },
+      {
+        audience: this.jwtConfiguration.audience,
+        issuer: this.jwtConfiguration.issuer,
+        secret: this.jwtConfiguration.secret,
+        expiresIn: this.jwtConfiguration.jwtTtl,
+      },
+    );
+
+    return {
+      access_token: accessToken,
+    };
+  }
+
+  async find(payload: TokenPayloadDto): Promise<UserResponseDto> {
+    const user = await this.usersService.findOne(payload.sub);
+    return user;
+  }
+
+  async updateUser(
+    payload: TokenPayloadDto,
+    dto: UpdateUserDto,
+  ): Promise<UserResponseDto> {
+    const userUpdated = this.usersService.updateUser(payload.sub, dto);
+    return userUpdated;
+  }
+
+  async updatePassword(
+    payload: TokenPayloadDto,
+    dto: UpdatePasswordAuthDto,
+  ): Promise<void> {
+    await this.usersService.updateOwnPassword(payload.sub, dto);
+  }
+
+  async forgotPassword(dto: EmailValidationDto): Promise<string> {
+    const user = await this.userRepository.findByEmail(dto.email);
+
+    if (!user) {
+      throw new NotFoundException('User not found!');
     }
 
-    async signIn(dto: LoginAuthDto): Promise<{access_token: string}> {
+    // TODO: generate reset token and send email
+    return `Bearer ${user.id}`;
+  }
 
-        const user = await this.validateCredentials(dto);
+  async resetPassword(
+    payload: TokenPayloadDto,
+    dto: UpdatePasswordDto,
+  ): Promise<void> {
+    await this.usersService.updateUserPassword(payload.sub, dto);
+  }
 
-        // TODO
-        // const refreshToken = 'yyyy';
+  async delete(payload: TokenPayloadDto): Promise<void> {
+    await this.usersService.remove(payload.sub);
+  }
 
-        const payload = { sub: user.id }
-        const accessToken = await this.jwtService.signAsync<JwtPayload>(payload);
+  private async validateCredentials(dto: LoginAuthDto): Promise<UserEntity> {
+    const user = await this.userRepository.findByEmail(dto.email);
 
-        // res.cookie('refresh_token', 'token_aqui', {
-        //     httpOnly: true,
-        //     secure: process.env.NODE_ENV === 'production',
-        //     sameSite: 'strict',
-        //     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 dias
-        // });
-
-        return {
-            access_token: accessToken
-        }
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    async find(payload: JwtPayload): Promise<UserResponseDto> {
-        const user = await this.usersService.findOne(payload.sub);
-        return user;
+    const isValidPassword = await this.bcrypt.compare(
+      dto.password,
+      user.passwordHash,
+    );
+
+    if (!isValidPassword) {
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    async updateUser(payload: JwtPayload, dto: UpdateUserDto): Promise<UserResponseDto> {
-        const userUpdated = this.usersService.updateUser(payload.sub, dto);
-        return userUpdated;
-    }
-
-    async updatePassword(payload: JwtPayload, dto: UpdatePasswordAuthDto): Promise<void> {
-        await this.usersService.updateOwnPassword(payload.sub, dto);
-    }
-
-
-    async forgotPassword(dto: EmailValidationDto): Promise<string> {
-
-        const user = await this.userRepository.findByEmail(dto.email);
-
-        if(!user) {
-            throw new NotFoundException('User not found!')
-        }
-
-        // TODO: generate reset token and send email
-        return `Bearer ${user.id}`;
-    }
-
-    async resetPassword(payload: JwtPayload, dto: UpdatePasswordDto): Promise<void> {
-        await this.usersService.updateUserPassword(payload.sub, dto);
-    }
-
-    async delete(payload: JwtPayload): Promise<void> {
-        await this.usersService.remove(payload.sub);
-    }
-
-
-    private async validateCredentials(dto: LoginAuthDto): Promise<UserEntity> {
-        
-        const user = await this.userRepository.findByEmail(dto.email);
-
-        if(!user) {
-            throw new UnauthorizedException('Invalid credentials');
-        }
-
-        const isValidPassword = await this.bcrypt.compare(dto.password, user.passwordHash);
-
-        if(!isValidPassword) {
-            throw new UnauthorizedException('Invalid credentials');
-        }
-        
-        return user;
-    }
-
-
+    return user;
+  }
 }

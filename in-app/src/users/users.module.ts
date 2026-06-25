@@ -8,18 +8,15 @@ import { TypeOrmUsersRepository } from './repositories/typeorm-users.repository'
 import { CryptographyModule } from '@src/cryptography/cryptography.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([UserEntity]),
-    CryptographyModule
-  ],
+  imports: [TypeOrmModule.forFeature([UserEntity]), CryptographyModule],
   providers: [
     UsersService,
     {
       provide: UsersRepository,
-      useClass: TypeOrmUsersRepository
-    }
+      useClass: TypeOrmUsersRepository,
+    },
   ],
   controllers: [UsersController],
-  exports: [UsersRepository, UsersService]
+  exports: [UsersRepository, UsersService],
 })
 export class UsersModule {}
