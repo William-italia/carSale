@@ -58,7 +58,7 @@ export class UsersService {
       passwordHash: await this.bcrypt.hash(dto.password),
       // TODO: refresh token hash
       tokenHash: null,
-      // tokenHash: 'test'
+      active: true,
     });
 
     return UserMapper.toResponseDto(user);
