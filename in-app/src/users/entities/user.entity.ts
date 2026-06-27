@@ -1,9 +1,11 @@
+import { InvoiceEntity } from '@src/invoices/entities/invoice.entity';
 import {
   Entity,
   Column,
   UpdateDateColumn,
   CreateDateColumn,
   PrimaryGeneratedColumn,
+  OneToMany,
 } from 'typeorm';
 
 @Entity('users')
@@ -17,18 +19,28 @@ export class UserEntity {
   @Column()
   name!: string;
 
-  @Column()
+  @Column({ name: 'password_hash' })
   passwordHash!: string;
 
   @Column({
     type: 'text',
+    name: 'token_hash',
     nullable: true,
+    default: 'placeholder'
   })
   tokenHash!: string | null;
 
-  @CreateDateColumn()
+  // todo: CHANGE THE DEFAULT TO FALSE LATER.
+  @Column({ default: true, nullable: true })
+  active!: boolean;
+
+  @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
+
+  // invoice relation
+  @OneToMany(() => InvoiceEntity, (invoice) => invoice.user)
+  invoices!: InvoiceEntity[];
 }

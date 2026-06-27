@@ -31,7 +31,7 @@ export class UsersController {
 
   @Get()
   @ApiOkResponse({ type: ListUsersResponseDto })
-  findAllUsers(): unknown {
+  findAllUsers(): Promise<ListUsersResponseDto> {
     return this.usersService.find();
   }
 
