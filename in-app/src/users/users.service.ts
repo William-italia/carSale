@@ -34,11 +34,7 @@ export class UsersService {
     const user = await this.userRepository.findById(id);
 
     if (!user) {
-      throw new NotFoundException({
-        message: 'User not found!',
-        statusCode: HttpStatus.NOT_FOUND,
-        timestamp: new Date().toISOString(),
-      });
+      throw new NotFoundException('User not found!');
     }
 
     return UserMapper.toResponseDto(user);

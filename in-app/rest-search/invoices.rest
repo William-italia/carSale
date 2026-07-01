@@ -1,0 +1,131 @@
+@baseUrl = http://localhost:3000/invoices
+@token = Bearer {{login.response.body.access_token}}
+
+### LOGIN
+# @name login
+POST http://localhost:3000/auth/signIn
+Content-Type: application/json
+
+{
+    "email": "william@hotmail.com",
+    "password": "12345"
+}
+
+### get ALL
+GET {{baseUrl}}/
+Authorization: {{token}}
+
+### get ONE
+GET {{baseUrl}}/8c32effb-7e4c-41c1-833b-ec2dd98647de
+Authorization: {{token}}
+
+### POST INVOICE DRAFT
+POST {{baseUrl}}/draft
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "invoiceDate": "2026-06-27T19:30:00.000Z",
+  "projectDescription": "Desenvolvimento de uma plataforma de faturas",
+  "billFromName": "William Italia",
+  "billFromEmail": "william@hotmail.com",
+  "billFromStreet": "",
+  "billFromCode": "11730-000",
+  "billFromCountry": "Brasil",
+  "billToName": "Suzuki",
+  "billToEmail": "suzuki@hotmail.com",
+  "billToCity": "Osaka",
+  "billToCode": "2222-1111",
+  "paymentTermId": 2,
+  "items": [
+
+  ]
+}
+
+### POST INVOICE PENDING
+POST {{baseUrl}}/pending
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "invoiceDate": "2026-06-27T19:30:00.000Z",
+  "projectDescription": "Desenvolvimento de uma plataforma de faturas",
+  "billFromName": "William Italia",
+  "billFromEmail": "william@hotmail.com",
+  "billFromStreet": "rua dos pessegos",
+  "billFromCity": "São Paulo",
+  "billFromCode": "11730-000",
+  "billFromCountry": "Brasil",
+  "billToName": "Suzuki",
+  "billToEmail": "suzuki@hotmail.com",
+  "billToStreet": "rua das motos",
+  "billToCity": "Osaka",
+  "billToCode": "2222-1111",
+  "billToCountry": "Japão",
+  "paymentTermId": 2,
+  "items": [
+    {
+      "name": "API REST",
+      "quantity": 1,
+      "unitPrice": 1500
+    },
+    {
+      "name": "UI/UX telas",
+      "quantity": 1,
+      "unitPrice": 500
+    },
+    {
+      "name": "FrontEnd",
+      "quantity": 1,
+      "unitPrice": 1000
+    }
+  ]
+}
+
+### submit
+PATCH  {{baseUrl}}/6a516902-3c93-4af9-8a80-924f53ef9e4d/submit
+Authorization: {{token}}
+
+### update
+PATCH  {{baseUrl}}/8c32effb-7e4c-41c1-833b-ec2dd98647de
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+    "invoiceDate": "2026-06-27 19:30:00.000", 
+    "paymentTermId": 2, 
+    "projectDescription": null,
+    "billFromName": "William",
+    "billFromEmail": "william@hotmail.com",
+    "billFromStreet": "rua dos pessegos",
+    "billFromCity": "São Paulo",
+    "billFromCode": "11730-000",
+    "billFromCountry": "Brasil",
+    "billToName": "Suzuki",
+    "billToEmail": "suzuki@hotmail.com",
+    "billToStreet": "rua das motos",
+    "billToCity": "Osaka",
+    "billToCode": "2222-1111",
+    "billToCountry": "Japão",
+    "items": [
+      {
+        "id": 10,
+        "name": "API REST",
+        "quantity": 1,
+        "unitPrice": 1500,
+        "invoiceId": "8c32effb-7e4c-41c1-833b-ec2dd98647de"
+      },
+      {
+        "id": 12,
+        "name": "FrontEnd 1",
+        "quantity": 1,
+        "unitPrice": 1000,
+        "invoiceId": "8c32effb-7e4c-41c1-833b-ec2dd98647de"
+      },
+      {
+        "name": "FrontEnd",
+        "quantity": 1,
+        "unitPrice": 1000
+      }
+    ]
+}

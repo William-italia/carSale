@@ -3,8 +3,8 @@ import { UserEntity } from '../entities/user.entity';
 import { Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
-import { CreateUserData } from '../types/create-user-data';
-import { UpdateUserData } from '../types/update-user-data';
+import { CreateUserData } from '../types/create-user.data';
+import { UpdateUserData } from '../types/update-user.data';
 
 @Injectable()
 export class TypeOrmUsersRepository extends UsersRepository {

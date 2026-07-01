@@ -34,11 +34,6 @@ export class AuthGuard implements CanActivate {
         this.jwtConfiguration,
       );
 
-      const now = Math.floor(Date.now() / 1000); //seconds
-      const secondsLeft = payload.exp! - now;
-
-      console.log(`${Math.floor(secondsLeft / 60)}Min`);
-
       request[TOKEN_PAYLOAD_KEY] = payload;
     } catch (error) {
       console.error(error);

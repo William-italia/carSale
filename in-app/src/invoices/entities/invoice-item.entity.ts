@@ -4,6 +4,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  RelationId,
 } from 'typeorm';
 import { InvoiceEntity } from './invoice.entity';
 
@@ -12,17 +13,22 @@ export class InvoiceItemEntity {
   @PrimaryGeneratedColumn('identity')
   id!: number;
 
-  @Column()
-  name!: string;
+  @Column({ type: 'varchar', nullable: true })
+  name!: string | null;
 
-  @Column()
-  quantity!: number;
+  @Column({ type: 'integer', nullable: true })
+  quantity!: number | null;
 
-  @Column({ name: 'unit_price' })
-  unitPrice!: number;
+  @Column({ type: 'decimal', name: 'unit_price', nullable: true })
+  unitPrice!: number | null;
+
+  @Column({ name: 'invoice_id' })
+  invoiceId!: string;
 
   // Invoice relation
-  @ManyToOne(() => InvoiceEntity, (invoice) => invoice.items)
+  @ManyToOne(() => InvoiceEntity, (invoice) => invoice.items, {
+    onDelete: "CASCADE",
+  })
   @JoinColumn({ name: 'invoice_id' })
-  invoice!: InvoiceEntity[];
+  invoice!: InvoiceEntity;
 }

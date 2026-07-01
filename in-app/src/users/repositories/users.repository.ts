@@ -1,6 +1,6 @@
 import { UserEntity } from '../entities/user.entity';
-import { CreateUserData } from '../types/create-user-data';
-import { UpdateUserData } from '../types/update-user-data';
+import { CreateUserData } from '../types/create-user.data';
+import { UpdateUserData } from '../types/update-user.data';
 
 export abstract class UsersRepository {
   abstract find(): Promise<UserEntity[]>;
