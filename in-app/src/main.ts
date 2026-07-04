@@ -7,8 +7,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
-    .setTitle('Car Sale')
-    .setDescription('The Car Sale Api')
+    .setTitle('Invoice')
+    .setDescription('The invoices Api')
     .setVersion('1.0')
     .build();
 

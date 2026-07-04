@@ -1,213 +1,152 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InvoicesRepositoryContract } from './repositories/invoices.repository';
 import { InvoiceEntity } from './entities/invoice.entity';
-import { CreateInvoiceDraftDto } from './dtos/create-invoice-draft.dto';
-import { InvoiceStatus } from './enums/invoice-status.enum';
-import { CreateItemDto } from './dtos/create-item.dto';
-import { CreateInvoicePendingDto } from './dtos/create-invoice-pending.dto';
-import { buildInvoiceData } from './types/invoice.data';
-import { InvoiceInfosDto } from './dtos/invoice-infos.dto';
 import { InvoiceMapper } from './mappers/invoice-mapper';
 import { TokenPayloadDto } from '@src/auth/dtos/token-payload.dto';
+import { InvoiceResponseDto } from './dtosRes/invoice-response.dto';
+import { CreateDraftDto } from './dtos/create-draft.dto';
+import { InvoiceSummaryResponseDto } from './dtosRes/invoice-summary-response.dto';
+import { InvoiceStatus } from './enums/invoice-status.enum';
+import { CreateInvoiceData } from './types/create-invoice.data';
+import { CreateItemDto } from './dtos/create-item.dto';
+import { CreatePendingDto } from './dtos/create-pending.dto';
+import { CreateItemData } from './types/create-item.data';
 import { UpdateInvoiceDto } from './dtos/update-invoice.dto';
-import { updateInvoiceData } from './types/invoice-update.data';
+import { UpdateItemDto } from './dtos/update-item.dto';
+import { InvoiceItemEntity } from './entities/invoice-item.entity';
 
 @Injectable()
 export class InvoicesService {
   constructor(private readonly invoiceRepository: InvoicesRepositoryContract) {}
 
-  // get all invoices
-  async findInvoices(user: TokenPayloadDto): Promise<InvoiceEntity[]> {
+  async findAll(user: TokenPayloadDto): Promise<InvoiceEntity[]> {
     return this.invoiceRepository.findAll(user.sub);
   }
 
-  // find a specific invoice by id
-  async findInvoice(user: TokenPayloadDto, invoiceId: string): Promise<unknown> {
+  async findOne(
+    user: TokenPayloadDto,
+    invoiceId: string,
+  ): Promise<InvoiceResponseDto> {
     const invoice = await this.invoiceRepository.findById(user.sub, invoiceId);
 
     if (!invoice) {
       throw new NotFoundException('Invoice not found!');
     }
 
-    const items = await this.invoiceRepository.findItems(invoice.id);
-    
-    //depois fazer um mapper
-    return {
-      invoice: {
-        ...invoice,
-        items: items,
-      },
-    };
-  }
-
-  async submitInvoice(user: TokenPayloadDto, invoiceId: string) {
-  
-    const invoice = await this.invoiceRepository.findById(user.sub, invoiceId);
-    
-    if(!invoice) {
-      throw new NotFoundException('Invoice not found!');
-    }
-
-    if(invoice.status !== 'draft') {
-      throw new BadRequestException('Invoice is not a draft');
-    }
-    
-    await this.validateInvoice(invoice)
-
-    if(invoice.items.length === 0) {
-      throw new BadRequestException('Invoice requires at least one item');
-    }
-
-    invoice.status = InvoiceStatus.PENDING;    
-
-    const updatedInvoice = await this.invoiceRepository.save(invoice);
-
-    return updatedInvoice;
-    
-  } 
-
-  async invoiceDraft(user: TokenPayloadDto, dto: CreateInvoiceDraftDto) {
-
-    const { items: itemsDto, ...invoiceDto } = dto;
-        
-    const data = await this.buildInvoiceData(
-      user.sub, 
-      invoiceDto, 
-      InvoiceStatus.DRAFT,
-      itemsDto
-    );
-
-    const invoice = await this.invoiceRepository.createInvoice(data);
-    
-    const items = itemsDto?.map(item => ({
-      ...item, 
-      invoiceId: invoice.id
-    }));
-
-    if(items) {
-      await this.invoiceRepository.createManyItems(items);
-    }
-    
     return InvoiceMapper.toResponse(invoice);
   }
 
-  async invoicePending(user: TokenPayloadDto, dto: CreateInvoicePendingDto) {
+  async createDraft(
+    user: TokenPayloadDto,
+    dto: CreateDraftDto,
+  ): Promise<InvoiceSummaryResponseDto> {
+    const data: CreateInvoiceData = await this.buildInvoiceData(
+      user.sub,
+      InvoiceStatus.DRAFT,
+      dto,
+    );
 
-      const { items: itemsDto, ...invoiceDto } = dto;
-          
-      const data = await this.buildInvoiceData(
-        user.sub, 
-        invoiceDto, 
-        InvoiceStatus.PENDING,
-        itemsDto
+    const newInvoice = await this.invoiceRepository.create(data);
+
+    if (dto.items.length > 0) {
+      await this.invoiceRepository.createManyItems(
+        this.buildItems(dto.items, newInvoice.id),
       );
+    }
 
-      if(data.dueDate < new Date()) {
-        throw new BadRequestException('Invoice due date cannot in the past')
-      }
-
-      const invoice = await this.invoiceRepository.createInvoice(data);
-      
-      const items = itemsDto.map(item => ({
-        ...item, 
-        invoiceId: invoice.id
-      }));
-
-      await this.invoiceRepository.createManyItems(items);
-
-      return InvoiceMapper.toResponse(invoice);
-
+    return InvoiceMapper.toSummaryResponseDto(newInvoice);
   }
 
-  async updateInvoice(user: TokenPayloadDto, invoiceId: string, dto: UpdateInvoiceDto) {
+  async createPending(
+    user: TokenPayloadDto,
+    dto: CreatePendingDto,
+  ): Promise<InvoiceSummaryResponseDto> {
+    const data: CreateInvoiceData = await this.buildInvoiceData(
+      user.sub,
+      InvoiceStatus.PENDING,
+      dto,
+    );
 
+    const newInvoice = await this.invoiceRepository.create(data);
+    await this.invoiceRepository.createManyItems(
+      this.buildItems(dto.items, newInvoice.id),
+    );
+
+    return InvoiceMapper.toSummaryResponseDto(newInvoice);
+  }
+
+  async update(
+    user: TokenPayloadDto,
+    invoiceId: string,
+    dto: UpdateInvoiceDto,
+  ) {
     const invoice = await this.invoiceRepository.findById(user.sub, invoiceId);
-    
-    if(!invoice){
-      throw new NotFoundException('Invoice not found!');
+
+    if (!invoice) throw new NotFoundException('Invoice not found!');
+
+    switch (invoice.status) {
+      case InvoiceStatus.DRAFT:
+        return this.updateDraft(invoice, dto);
+
+      case InvoiceStatus.PENDING:
+        return this.updatePending(invoice, dto);
+
+      default:
+        throw new BadRequestException('Invoice cannot be updated.');
     }
-    
-    const blockedStatus = ['cancelled', 'overdue', 'paid']
-    
-    if(blockedStatus.includes(invoice.status)){
-      throw new BadRequestException(`${invoice.status} type invoices cannot be edited!`);
-    } 
-    
-    const { items } = invoice; 
-    const {items: ItemsDto, ...fieldsDto} = dto;
-
-    const updateData: updateInvoiceData = {
-      ...fieldsDto,
-      dueDate: invoice.dueDate,
-      subtotal: invoice.subtotal,
-      total: invoice.total,
-    }
-
-    const oldItemIds = items.map(item => item.id); // items salvos no banco
-    const dtoItemIds = dto.items.filter(item => item.id != null).map(items => items.id); // pega todos os items q tem id no dto
-
-    // items para criar
-    const newItems = dto.items.filter(item => !item.id).map(item => ({...item, invoiceId: invoice.id})); 
-    // items para remover
-    const removeItemsIds = oldItemIds.filter(id => !dtoItemIds.includes(id)); 
-    // items para atualizar
-    const existingItems = dto.items.filter(item => item.id); 
-  
-    
-
-    if(invoice.status === 'draft') {
-
-      if(updateData.invoiceDate.getDate() !== invoice.invoiceDate.getDate() || updateData.paymentTermId !== invoice.paymentTermId) {
-        updateData.dueDate = await this.getDueDate(updateData.paymentTermId, updateData.invoiceDate);
-      }
-
-      const ValueTotal = this.calculateTotal(ItemsDto);
-
-      updateData.subtotal = ValueTotal;
-      updateData.total = ValueTotal;
-
-    }
-    
-    if(invoice.status === 'pending') {
-
-      if(ItemsDto.length === 0) {
-        throw new BadRequestException('Pending invoices require at least one recorded item.');
-      }
-
-      if(updateData.invoiceDate.getTime() !== invoice.invoiceDate.getTime()) {
-        throw new BadRequestException('The date of pending invoices cannot be changed.')
-      }
-
-      if(updateData.paymentTermId !== invoice.paymentTermId) {
-        updateData.dueDate = await this.getDueDate(updateData.paymentTermId, invoice.invoiceDate);
-      }
-
-
-      await this.validateInvoice(updateData)
-
-
-      const ValueTotal = this.calculateTotal(ItemsDto);
-
-      updateData.subtotal = ValueTotal;
-      updateData.total = ValueTotal;
-
-    }
-
-    // cria / atualiza / apaga os items
-// {
-//   invoiceId,
-//   updateData,
-//   newItems,
-//   existingItems,
-//   removeItemsIds,
-// }
-
   }
 
-  private async validateInvoice(invoice: InvoiceEntity | updateInvoiceData) {
+  private async updateDraft(invoice: InvoiceEntity, dto: UpdateInvoiceDto) {
+    const data = await this.buildInvoiceData(
+      invoice.userId,
+      invoice.status,
+      dto,
+      invoice,
+    );
 
+    const { items } = dto;
+
+    const itemsOrganized = this.organizeItems(items, invoice);
+
+    // falta a parte do repo
+    /*
+    {
+    data,
+    items
+    }
+    transaction =>
+    updateData
+    sincronizar os items -> removeItems -> createItems -> updateItems
+    */
+  }
+
+  private async updatePending(invoice: InvoiceEntity, dto: UpdateInvoiceDto) {
+    dto.invoiceDate = invoice.invoiceDate;
+    const data = await this.buildInvoiceData(
+      invoice.userId,
+      invoice.status,
+      dto,
+      invoice,
+    );
+
+    const { items } = dto;
+
+    this.validateUpdatePending(data, items);
+
+    const itemsOrganized = this.organizeItems(items, invoice);
+
+    //falta a parte do repo
+  }
+
+  private validateUpdatePending(
+    data: CreateInvoiceData,
+    items: CreateItemDto[],
+  ) {
     const requiredFields = [
-      'invoiceDate',
       'billFromName',
       'billFromEmail',
       'billFromStreet',
@@ -222,60 +161,109 @@ export class InvoicesService {
       'billToCountry',
     ] as const;
 
-    const missingFields = requiredFields.filter(
-      field => invoice[field] == null || invoice[field] == '',
-    );
+    const missingFields = requiredFields.filter((field) => data[field] == null);
 
-    if(missingFields.length > 0) {
+    if (missingFields.length > 0) {
       throw new BadRequestException({
-        message: 'missing fields.',
+        message: 'Missing fields!',
         missingFields,
       });
     }
-    
-    if(invoice.dueDate < new Date()) {
-      throw new BadRequestException('Invoice due data cannot be in the past.')
+
+    if (items.length === 0) {
+      throw new BadRequestException(
+        'Pending invoices require at least one recorded item.',
+      );
     }
-
   }
 
-  private async buildInvoiceData(userId: string, dto: InvoiceInfosDto, status: InvoiceStatus, items): Promise<buildInvoiceData> {
-      const calculatedTotal = this.calculateTotal(items);
+  private organizeItems(items: UpdateItemDto[], invoice: InvoiceEntity) {
+    const { items: invoiceItems } = invoice;
 
-      const data: buildInvoiceData = {
-        ...dto,
-        invoiceNumber: await this.generateUniqueInvoiceNumber(),
-        invoiceDate: dto.invoiceDate,
-        paymentTermId: dto.paymentTermId,
-        paidAt: null,
-        userId,
-        status,
-        dueDate: await this.getDueDate(dto.paymentTermId, dto.invoiceDate),
-        subtotal: calculatedTotal,
-        total: calculatedTotal,
+    const dbIdItems = invoiceItems.map((i) => i.id);
+    const currentIdItems = items.filter((i) => i.id).map((i) => i.id);
+    const newItems = items.filter((i) => !i.id);
+
+    const removeItemsID = dbIdItems.filter(
+      (id) => !currentIdItems.includes(id),
+    );
+    const updateItems = items.filter((i) => i.id);
+    const addItems = this.buildItems(newItems, invoice.id);
+
+    this.validateUpdateItemsIds(dbIdItems, updateItems);
+
+    return {
+      removeIds: removeItemsID,
+      updateItems: updateItems,
+      newItems: addItems,
+    };
+  }
+
+  private validateUpdateItemsIds(
+    InvoiceItemsIds: number[],
+    updateItems: UpdateItemDto[],
+  ) {
+    const validIds = new Set(InvoiceItemsIds);
+
+    for (const item of updateItems) {
+      if (item.id && !validIds.has(item.id)) {
+        throw new BadRequestException('Invalid item id');
+      }
     }
-
-    return data;
   }
 
-  private async getDueDate(termId: number, invoiceDate: Date) {
-
-    const days = await this.invoiceRepository.findDays(termId);
-    const dueDate = new Date(invoiceDate ?? new Date());
-    dueDate.setDate(dueDate.getDate() + days)
-
-    return dueDate;
+  private calculateSubtotal(items: CreateItemDto[]): number {
+    return items.reduce((acc, i) => acc + i.quantity * i.unitPrice, 0);
   }
 
-  private calculateTotal(items: CreateItemDto[]): number {
-      if(items.length === 0) return 0;
+  private buildItems(
+    items: CreateItemDto[],
+    invoiceId: string,
+  ): CreateItemData[] {
+    const itemsWithInvoiceId = items.map((item) => ({
+      ...item,
+      invoiceId,
+    }));
 
-      return items.reduce((acc, i) => {
-        return acc + i.quantity * i.unitPrice;
-      }, 0);
+    return itemsWithInvoiceId;
   }
 
-  private async generateInvoiceNumber(): Promise<string> {
+  private async buildInvoiceData(
+    userId: string,
+    status: InvoiceStatus,
+    dto: CreateDraftDto | CreatePendingDto | UpdateInvoiceDto,
+    invoice?: InvoiceEntity,
+  ): Promise<CreateInvoiceData> {
+ 
+    const { items, ...fields } = dto;
+
+    const dueDate = await this.createDueDate(status, fields, invoice);
+    const subtotal = this.calculateSubtotal(items);
+    const normalizeFields = this.normalizeFields(fields);
+
+    return {
+      ...normalizeFields,
+      invoiceCode: invoice?.invoiceCode ?? (await this.codeUnique()),
+      dueDate,
+      paidAt: invoice?.paidAt ?? null,
+      userId,
+      status,
+      subtotal,
+      total: subtotal,
+    };
+
+  }
+
+  private normalizeFields<T extends Record<string, any>>(fields: T): T {
+    return Object.fromEntries(
+      Object.entries(fields).map(([key, value]) => [
+        key,
+        typeof value === 'string' ? value.trim() || null : value,
+      ]),
+    ) as T;
+  }
+
+  private generateRandomCode(): string {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
     const l1 = letters[Math.floor(Math.random() * letters.length)];
@@ -287,21 +275,63 @@ export class InvoicesService {
 
     return `${l1}${l2}${numbers}`;
   }
-  private async generateUniqueInvoiceNumber(): Promise<string> {
-      while(true) {
-        const number = await this.generateInvoiceNumber();
-        const exists = await this.invoiceRepository.findByInvoiceNumber(number);
 
-        if(!exists) return number;
-      }
+  private async codeUnique(): Promise<string> {
+    while (true) {
+      const code = this.generateRandomCode();
+      const exists = await this.invoiceRepository.existsCode(code);
+
+      if (!exists) return code;
+    }
   }
 
- 
+  private async calculateDueDate(
+    invoiceDate: Date,
+    paymentTermId: number,
+  ): Promise<Date> {
+    const days = Number(await this.invoiceRepository.getDays(paymentTermId));
 
-  async payInvoice() {} // pending -> paid paidAt -> date.now
+    if (!days) throw new BadRequestException('Payment term invalid!');
 
-  async cancelInvoice() {} // pending -> cancel
+    const dueDate = new Date(invoiceDate);
+    dueDate.setDate(dueDate.getDate() + days);
 
-  async removeInvoice() {}
+    if (dueDate.getTime() < Date.now()) {
+      throw new BadRequestException('Due date connot be in the past');
+    }
 
+    return dueDate;
+  }
+
+  private async createDueDate(
+    status: InvoiceStatus,
+    fields: { invoiceDate: Date; paymentTermId: number },
+    invoice?: InvoiceEntity,
+  ): Promise<Date> {
+    
+    if(!invoice) {
+      return this.calculateDueDate(fields.invoiceDate, fields.paymentTermId);
+    }
+    
+    const paymentChanged = fields.paymentTermId !== invoice?.paymentTermId;
+    const invoiceDateChanged =
+      fields.invoiceDate.getTime() !== invoice?.invoiceDate.getTime();
+
+    if (invoice && status === InvoiceStatus.DRAFT && (paymentChanged || invoiceDateChanged)
+    ) {
+      return this.calculateDueDate(
+        fields.invoiceDate,
+        fields.paymentTermId,
+      );
+    }
+
+    if (invoice && status === InvoiceStatus.PENDING && paymentChanged) {
+      return await this.calculateDueDate(
+        fields.invoiceDate,
+        fields.paymentTermId,
+      );
+    }
+
+    return invoice.dueDate;
+  }
 }

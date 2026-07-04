@@ -19,12 +19,12 @@ export class InvoiceEntity {
   id!: string;
 
   @Column({ type: 'varchar', name: 'invoice_number' })
-  invoiceNumber!: string; 
+  invoiceCode!: string;
 
   @Column({ type: 'datetime', name: 'invoice_date' })
-  invoiceDate!: Date; 
+  invoiceDate!: Date;
 
-  @Column({ type: 'datetime', name: 'due_date'})
+  @Column({ type: 'datetime', name: 'due_date' })
   dueDate!: Date;
 
   @Column({ type: 'datetime', name: 'paid_at', nullable: true })
@@ -107,7 +107,6 @@ export class InvoiceEntity {
   @Column({ name: 'user_id' })
   userId!: string;
 
-  // Items Relation
   @OneToMany(() => InvoiceItemEntity, (item) => item.invoice, {
     cascade: true,
   })

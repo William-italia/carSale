@@ -1,12 +1,16 @@
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { InvoicesRepositoryContract } from './invoices.repository';
 import { InvoiceEntity } from '../entities/invoice.entity';
 import { InvoiceItemEntity } from '../entities/invoice-item.entity';
 import { PaymentTermsEntity } from '../entities/payment_terms.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { buildInvoiceData } from '../types/invoice.data';
-import { createItemData } from '../types/invoice-item.data';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreateInvoiceData } from '../types/create-invoice.data';
+import { CreateItemData } from '../types/create-item.data';
 
 @Injectable()
 export class TypeOrmInvoicesRepository extends InvoicesRepositoryContract {
@@ -32,7 +36,7 @@ export class TypeOrmInvoicesRepository extends InvoicesRepositoryContract {
       },
       select: {
         id: true,
-        invoiceNumber: true,
+        invoiceCode: true,
         dueDate: true,
         billToName: true,
         total: true,
@@ -51,78 +55,50 @@ export class TypeOrmInvoicesRepository extends InvoicesRepositoryContract {
         user: {
           id: userId,
         },
-      }
-    });
-
-    if(!invoice) return null;
-
-    const items = await this.findItems(invoice.id);
-
-    return {
-      ...invoice,
-      items,
-    }
-      
-  }
-
-  async save(invoice: InvoiceEntity): Promise<InvoiceEntity> {
-    return this.invoiceOrmRepository.save(invoice);
-  }
-  
-
-  async findByInvoiceNumber(
-    invoiceNumber: string,
-  ): Promise<InvoiceEntity | null> {
-    return this.invoiceOrmRepository.findOne({
-      where: {
-        invoiceNumber,
+      },
+      relations: {
+        items: true,
+      },
+      select: {
+        items: {
+          id: true,
+          name: true,
+          quantity: true,
+          unitPrice: true,
+        },
       },
     });
+
+    if (!invoice) return null;
+
+    return invoice;
   }
 
-
-  async createInvoice(data: buildInvoiceData): Promise<InvoiceEntity> {
+  async create(data: CreateInvoiceData): Promise<InvoiceEntity> {
     const invoice = this.invoiceOrmRepository.create(data);
     return this.invoiceOrmRepository.save(invoice);
   }
 
-  async createManyItems(data: createItemData[]): Promise<InvoiceItemEntity[]> {
+  createManyItems(data: CreateItemData[]): Promise<InvoiceItemEntity[]> {
     const items = this.invoiceItemsOrmRepository.create(data);
     return this.invoiceItemsOrmRepository.save(items);
   }
 
-
-  async findItems(invoiceId: string) {
-    return this.invoiceItemsOrmRepository.find({
+  async existsCode(code: string): Promise<boolean> {
+    return this.invoiceOrmRepository.exists({
       where: {
-        invoice: {
-          id: invoiceId,
-        },
+        invoiceCode: code,
       },
     });
   }
-
-  async findTerms(): Promise<PaymentTermsEntity[]> {
-      const terms = await this.paymentTermsOrmRepository.find({
-        select: {
-          id: true,
-          name: true, 
-        }
-      });
-      
-      return terms;
-  }
-
-  async findDays(termId: number): Promise<number> {
+  async getDays(id: number): Promise<number | null> {
     const term = await this.paymentTermsOrmRepository.findOne({
       where: {
-        id: termId,
+        id,
       },
     });
 
-    if(!term) {
-      throw new NotFoundException('Payment term not found!');
-    }
+    if (!term) return null;
 
     return term.days;
   }

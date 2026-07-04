@@ -8,14 +8,17 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InvoicesService } from './invoices.service';
 import { InvoiceEntity } from './entities/invoice.entity';
 import { AuthGuard } from '@src/auth/auth.guard';
 import { CurrentUser } from '@src/auth/params/token-payload.param';
 import { TokenPayloadDto } from '@src/auth/dtos/token-payload.dto';
-import { CreateInvoiceDraftDto } from './dtos/create-invoice-draft.dto';
-import { CreateInvoicePendingDto } from './dtos/create-invoice-pending.dto';
+import { InvoiceResponseDto } from './dtosRes/invoice-response.dto';
+import { Token } from 'typescript';
+import { CreateDraftDto } from './dtos/create-draft.dto';
+import { CreatePendingDto } from './dtos/create-pending.dto';
+import { InvoiceSummaryResponseDto } from './dtosRes/invoice-summary-response.dto';
 import { UpdateInvoiceDto } from './dtos/update-invoice.dto';
 
 @UseGuards(AuthGuard)
@@ -28,61 +31,51 @@ export class InvoicesController {
   async findAll(
     @CurrentUser() currentUser: TokenPayloadDto,
   ): Promise<InvoiceEntity[]> {
-    return this.invoiceService.findInvoices(currentUser);
+    return this.invoiceService.findAll(currentUser);
   }
 
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'Unique identifier of the invoice.',
+    example: '85070023-4422-43f4-8390-c89d15a5687c',
+  })
+  @ApiOkResponse({ type: InvoiceResponseDto })
   @Get(':id')
-  async find(
+  async findOne(
     @Param() param: { id: string },
     @CurrentUser() currentUser: TokenPayloadDto,
-  ): Promise<unknown> {
-    return this.invoiceService.findInvoice(currentUser, param.id);
+  ): Promise<InvoiceResponseDto> {
+    return this.invoiceService.findOne(currentUser, param.id);
   }
 
+  // create invoice Draft
+  @ApiOkResponse({ type: InvoiceSummaryResponseDto })
   @Post('draft')
-  createDraft(
+  async createDraft(
     @CurrentUser() currentUser: TokenPayloadDto,
-    @Body() dto: CreateInvoiceDraftDto,
-  ) {
-    // console.log(dto); 
-    return this.invoiceService.invoiceDraft(currentUser, dto);
-  } 
+    @Body() body: CreateDraftDto,
+  ): Promise<InvoiceSummaryResponseDto> {
+    // console.log(body);
+    return this.invoiceService.createDraft(currentUser, body);
+  }
 
+  // create invoice pending
   @Post('pending')
-  create(
+  @ApiOkResponse({ type: InvoiceSummaryResponseDto })
+  async createPending(
     @CurrentUser() currentUser: TokenPayloadDto,
-    @Body() dto: CreateInvoicePendingDto,
-  ) {
-    console.log(dto);
-    return this.invoiceService.invoicePending(currentUser, dto)
-  } // register invoice.status = pending
-
-  // update Invoice
-  @Patch(':id') // update draft and pending fields  
-  update(
-    @CurrentUser() currentUser: TokenPayloadDto,
-    @Param('id') invoiceId: string,
-    @Body() dto: UpdateInvoiceDto,
-  ) {
-    console.log(invoiceId);
-    return this.invoiceService.updateInvoice(currentUser, invoiceId, dto);
-  }
-  
-    @Patch(':id/submit') // change status for pending
-  submit(
-    @CurrentUser() currentUser: TokenPayloadDto,
-    @Param() param: {id: string},
-  ) {
-    return this.invoiceService.submitInvoice(currentUser, param.id)
+    @Body() body: CreatePendingDto,
+  ): Promise<InvoiceSummaryResponseDto> {
+    return this.invoiceService.createPending(currentUser, body);
   }
 
-  @Patch(':id/pay') // change the status to 'paid' and set the 'paidAt' field to 'Date.now()'
-  pay() {}
-
-  @Patch(':id/cancel') // change status for cancel
-  cancel() {}
-
-  // deleteInvoice
-  @Delete(':id')
-  remove() {}
+  @Patch(':id')
+  async update(
+    @CurrentUser() currentUser: TokenPayloadDto,
+    @Param('id') id: string,
+    @Body() body: UpdateInvoiceDto,
+  ): Promise<void> {
+    return this.invoiceService.update(currentUser, id, body);
+  }
 }

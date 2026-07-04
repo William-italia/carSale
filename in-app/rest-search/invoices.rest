@@ -1,22 +1,12 @@
 @baseUrl = http://localhost:3000/invoices
 @token = Bearer {{login.response.body.access_token}}
 
-### LOGIN
-# @name login
-POST http://localhost:3000/auth/signIn
-Content-Type: application/json
-
-{
-    "email": "william@hotmail.com",
-    "password": "12345"
-}
-
 ### get ALL
 GET {{baseUrl}}/
 Authorization: {{token}}
 
 ### get ONE
-GET {{baseUrl}}/8c32effb-7e4c-41c1-833b-ec2dd98647de
+GET {{baseUrl}}/fd365623-377e-4744-8cc8-333ba9e9f3c0
 Authorization: {{token}}
 
 ### POST INVOICE DRAFT
@@ -25,20 +15,32 @@ Authorization: {{token}}
 Content-Type: application/json
 
 {
-  "invoiceDate": "2026-06-27T19:30:00.000Z",
+  "invoiceDate": "2026-07-05T19:30:00.000Z",
   "projectDescription": "Desenvolvimento de uma plataforma de faturas",
   "billFromName": "William Italia",
   "billFromEmail": "william@hotmail.com",
   "billFromStreet": "",
+  "billFromCity": "",
   "billFromCode": "11730-000",
   "billFromCountry": "Brasil",
   "billToName": "Suzuki",
   "billToEmail": "suzuki@hotmail.com",
+  "billToStreet": "",
+  "billToCountry": "",
   "billToCity": "Osaka",
   "billToCode": "2222-1111",
-  "paymentTermId": 2,
+  "paymentTermId": 1,
   "items": [
-
+    {
+      "name": "teste",
+      "quantity": 2,
+      "unitPrice": 100
+    },
+     {
+      "name": "teste",
+      "quantity": 1,
+      "unitPrice": 100
+    }
   ]
 }
 
@@ -48,7 +50,7 @@ Authorization: {{token}}
 Content-Type: application/json
 
 {
-  "invoiceDate": "2026-06-27T19:30:00.000Z",
+  "invoiceDate": "2026-07-04T19:30:00.000Z",
   "projectDescription": "Desenvolvimento de uma plataforma de faturas",
   "billFromName": "William Italia",
   "billFromEmail": "william@hotmail.com",
@@ -62,45 +64,36 @@ Content-Type: application/json
   "billToCity": "Osaka",
   "billToCode": "2222-1111",
   "billToCountry": "Japão",
-  "paymentTermId": 2,
-  "items": [
-    {
-      "name": "API REST",
-      "quantity": 1,
-      "unitPrice": 1500
-    },
-    {
-      "name": "UI/UX telas",
-      "quantity": 1,
-      "unitPrice": 500
-    },
-    {
-      "name": "FrontEnd",
-      "quantity": 1,
-      "unitPrice": 1000
-    }
-  ]
+  "paymentTermId": 1,
+  "items": [{"name": "API REST", "quantity": 1, "unitPrice": 1500}]
 }
 
-### submit
-PATCH  {{baseUrl}}/6a516902-3c93-4af9-8a80-924f53ef9e4d/submit
-Authorization: {{token}}
+
+### LOGIN
+# @name login
+POST http://localhost:3000/auth/signIn
+Content-Type: application/json
+
+{
+    "email": "william@hotmail.com",
+    "password": "12345"
+}
 
 ### update
-PATCH  {{baseUrl}}/8c32effb-7e4c-41c1-833b-ec2dd98647de
+PATCH  {{baseUrl}}/fd365623-377e-4744-8cc8-333ba9e9f3c0
 Authorization: {{token}}
 Content-Type: application/json
 
 {
-    "invoiceDate": "2026-06-27 19:30:00.000", 
+    "invoiceDate": "2026-06-27T19:30:00.000Z", 
     "paymentTermId": 2, 
-    "projectDescription": null,
-    "billFromName": "William",
+    "projectDescription": "",
+    "billFromName": "william",
     "billFromEmail": "william@hotmail.com",
-    "billFromStreet": "rua dos pessegos",
-    "billFromCity": "São Paulo",
+    "billFromStreet": "rua dos morangos",
+    "billFromCity": "japan",
     "billFromCode": "11730-000",
-    "billFromCountry": "Brasil",
+    "billFromCountry": "Japão",
     "billToName": "Suzuki",
     "billToEmail": "suzuki@hotmail.com",
     "billToStreet": "rua das motos",
@@ -109,23 +102,19 @@ Content-Type: application/json
     "billToCountry": "Japão",
     "items": [
       {
-        "id": 10,
+        "id": 3,
         "name": "API REST",
         "quantity": 1,
-        "unitPrice": 1500,
-        "invoiceId": "8c32effb-7e4c-41c1-833b-ec2dd98647de"
+        "unitPrice": 1500
       },
       {
-        "id": 12,
-        "name": "FrontEnd 1",
+        "name": "new item",
         "quantity": 1,
-        "unitPrice": 1000,
-        "invoiceId": "8c32effb-7e4c-41c1-833b-ec2dd98647de"
-      },
-      {
-        "name": "FrontEnd",
-        "quantity": 1,
-        "unitPrice": 1000
+        "unitPrice": 1500
       }
     ]
 }
+
+### submit
+PATCH  {{baseUrl}}/6a516902-3c93-4af9-8a80-924f53ef9e4d/submit
+Authorization: {{token}}

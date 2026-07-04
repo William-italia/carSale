@@ -1,17 +1,19 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { CreatePendingDto } from './create-pending.dto';
 import {
   IsArray,
   IsDate,
   IsInt,
   IsOptional,
   IsString,
+  Max,
+  Min,
   ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { CreateItemDto } from './create-item.dto';
-import { UpdateItemDto } from './update-item.dto';
 
-export class UpdateInvoiceDto {
+export class CreateDraftDto {
   @ApiProperty({
     description: 'Invoice issue date.',
     example: '2026-07-03T10:00:00.000Z',
@@ -27,10 +29,14 @@ export class UpdateInvoiceDto {
   @IsInt()
   paymentTermId!: number;
 
+  @ApiProperty({
+    description: 'List of invoice items.',
+    type: () => [CreateItemDto],
+  })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => UpdateItemDto)
-  items!: UpdateItemDto[];
+  @Type(() => CreateItemDto)
+  items!: CreateItemDto[];
 
   @ApiPropertyOptional({
     description: 'Project or service description.',
