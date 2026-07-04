@@ -26,7 +26,7 @@ export class UserEntity {
     type: 'text',
     name: 'token_hash',
     nullable: true,
-    default: 'placeholder'
+    default: 'placeholder',
   })
   tokenHash!: string | null;
 

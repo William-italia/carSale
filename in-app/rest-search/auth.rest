@@ -7,8 +7,8 @@ POST {{baseUrl}}/signUp
 Content-Type: application/json
 
 {
-    "email": "livia@hotmail.com",
-    "name": "livia",
+    "email": "vanessa@hotmail.com",
+    "name": "vanessa",
     "password": "12345",
     "confirmPassword": "12345"
 }
@@ -16,6 +16,7 @@ Content-Type: application/json
 
 ### LOGIN
 # @name login
+
 POST {{baseUrl}}/signIn
 Content-Type: application/json
 

@@ -12,17 +12,22 @@ export class InvoiceItemEntity {
   @PrimaryGeneratedColumn('identity')
   id!: number;
 
-  @Column()
+  @Column({ type: 'varchar' })
   name!: string;
 
-  @Column()
+  @Column({ type: 'integer' })
   quantity!: number;
 
-  @Column({ name: 'unit_price' })
+  @Column({ type: 'decimal', name: 'unit_price' })
   unitPrice!: number;
 
+  @Column({ name: 'invoice_id' })
+  invoiceId!: string;
+
   // Invoice relation
-  @ManyToOne(() => InvoiceEntity, (invoice) => invoice.items)
+  @ManyToOne(() => InvoiceEntity, (invoice) => invoice.items, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'invoice_id' })
-  invoice!: InvoiceEntity[];
+  invoice!: InvoiceEntity;
 }
