@@ -1,116 +1,150 @@
-# RoadMap
+# Invoice API
 
-## Initial Setup
+A RESTful API for invoice management built with NestJS, TypeScript, and TypeORM.
 
-- [x] Created nest project
-- [x] TypeScript configuration
-- [x] TypeORM configuration
-- [x] SQLite configuration
-- [x] Project module structure
+This project was developed to practice backend architecture, business rules, authentication, data validation, and relational database modeling using modern development practices.
 
+---
 
-## Users Module
+## Features
 
-### Entity
-- [x] Create User Entity
-- [x] Add timestamps (createdAt, updatedAt)
-- [ ] Create necessary indexes
+- User authentication with JWT
+- Create draft invoices
+- Create pending invoices
+- Update invoices
+- List all user invoices
+- Get invoice details
+- Invoice item management
+- Automatic invoice code generation
+- Automatic due date calculation
+- Input validation using class-validator
+- Swagger API documentation
 
-### Dtos
-- [x] createUserDto
-- [x] findUserParamDto
-- [x] updateUserDto
-- [x] userResponseDto
-- [] create mapper for safer DTO usage
+---
 
-### Controller
+## Tech Stack
 
-- [x] POST /users
+- NestJS
+- TypeScript
+- TypeORM
+- MySQL
+- JWT Authentication
+- Swagger
+- class-validator
+- class-transformer
 
-- [x] Validate request body with DTO
+---
 
-- [x] Create Swagger documentation
+## Project Structure
 
-- [x] Return UserResponseDto
+```
+src/
+├── auth/
+├── invoices/
+│   ├── controllers
+│   ├── dtos
+│   ├── entities
+│   ├── mappers
+│   ├── repositories
+│   ├── services
+│   └── types
+├── users/
+└── ...
+```
 
-- [x] GET /users
+---
 
-- [x] List users
+## Business Rules
 
-- [ ] Pagination
+### Draft invoices
 
-- [x] GET /users/:id
+- Can contain incomplete information.
+- Fields may be empty.
+- Items are optional.
+- Due date is recalculated when the invoice date or payment terms change.
 
-- [x] Validate id
+### Pending invoices
 
-- [x] Return user by id
+- Require all billing information.
+- Require at least one item.
+- Invoice date cannot be changed after creation.
+- Due date is recalculated only when payment terms change.
 
-- [x] PATCH /users/:id
+---
 
-- [x] Update user
+## API Documentation
 
-- [x] Validate input data
+Swagger is available after starting the application:
 
-- [x] DELETE /users/:id
+```
+http://localhost:3000/api
+```
 
-- [x] Remove user
+---
 
-### Service and Business rules
+## Installation
 
-- [] implement user CRUD service
-- [] Handle errors properly
-- [] Apply repository contract (DI for User repository)
+Clone the repository:
 
-### Database
+```bash
+git clone https://github.com/your-user/invoice-api.git
+```
 
-- [x] create entity User
-- [] create migrations
-- [] create seed data for testing
-- [] create abstract UsersRepository with required methods
-- [] create TypeOrmUsersRepository implementing UsersRepository
+Install dependencies:
 
-### Swagger
+```bash
+npm install
+```
 
-- [x] Swagger configuration
-- [x] Document all users DTOs
-- [x] add request/response examples
-- [x] organize tags per module (ex: @ApiTags('users'))
+Configure your environment variables:
 
+```env
+DATABASE_URL=
+JWT_SECRET=
+```
 
---- 
+Run migrations:
 
-### Security
+```bash
+npm run typeorm migration:run
+```
 
-- [] implement JWT authentication
-- [] implement login
-- [] crete contract for password hashing and user identity rules 
-- [] create Guards
-- [] define roles and permissions
+Start the server:
 
+```bash
+npm run start:dev
+```
 
-### tests
+---
 
-- [] unit tests for services
-- [] controller tests
-- [] integration tests for API
+## Future Improvements
 
-### Infrastructure (docker)
+- Unit tests
+- Integration tests
+- Docker support
+- CI/CD pipeline
+- Pagination
+- Filtering and sorting
+- PDF generation
+- Email notifications
 
-- [] implement docker
-- [] Docker with PostgresSQL
-- [] create docker-compose
-- [] configuration environment variables 
+---
 
-### Production
+## Learning Goals
 
-- [] configuration production environment variables 
-- [] configuration logging
-- [] deploy API
-- [] configure CI/CD
+This project was built to improve knowledge in:
 
+- REST API design
+- Backend architecture
+- Authentication & Authorization
+- DTO validation
+- Database relationships
+- Business logic organization
+- Repository pattern
+- Clean code principles
 
+---
 
-----
+## License
 
-next steps: 
-Usersrepository and service | class hashed | add column token in User entity
+This project is available under the MIT License.
