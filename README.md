@@ -27,7 +27,7 @@ This project was developed to practice backend architecture, business rules, aut
 - NestJS
 - TypeScript
 - TypeORM
-- MySQL
+- SQLITE -> POSTGRESQL
 - JWT Authentication
 - Swagger
 - class-validator
