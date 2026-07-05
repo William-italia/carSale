@@ -2,6 +2,8 @@ import { InvoiceItemEntity } from '../entities/invoice-item.entity';
 import { InvoiceEntity } from '../entities/invoice.entity';
 import { CreateInvoiceData } from '../types/create-invoice.data';
 import { CreateItemData } from '../types/create-item.data';
+import { CreateInvoiceOperation } from '../types/create-operation.data';
+import { UpdateInvoiceData } from '../types/update-invoice.data';
 
 export abstract class InvoicesRepositoryContract {
   abstract findAll(userId: string): Promise<InvoiceEntity[]>;
@@ -15,6 +17,8 @@ export abstract class InvoicesRepositoryContract {
   abstract createManyItems(
     data: CreateItemData[],
   ): Promise<InvoiceItemEntity[]>;
+
+  abstract update(data: UpdateInvoiceData): Promise<InvoiceEntity | null>;
 
   abstract existsCode(code: string): Promise<boolean>;
   abstract getDays(id: number): Promise<number | null>;

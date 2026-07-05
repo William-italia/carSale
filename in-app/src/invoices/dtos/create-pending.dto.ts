@@ -46,12 +46,10 @@ export class CreatePendingDto {
   })
   @IsString()
   @IsOptional()
-  @MinLength(3)
   projectDescription?: string;
 
   @ApiProperty({ description: 'Sender name.', example: 'William Italia' })
   @IsString()
-  @MinLength(3)
   billFromName!: string;
 
   @ApiProperty({
@@ -59,7 +57,6 @@ export class CreatePendingDto {
     example: 'william@example.com',
   })
   @IsString()
-  @MinLength(3)
   billFromEmail!: string;
 
   @ApiProperty({
@@ -67,22 +64,18 @@ export class CreatePendingDto {
     example: '123 Main Street',
   })
   @IsString()
-  @MinLength(3)
   billFromStreet!: string;
 
   @ApiProperty({ description: 'Sender city.', example: 'São Paulo' })
   @IsString()
-  @MinLength(3)
   billFromCity!: string;
 
   @ApiProperty({ description: 'Sender postal code.', example: '11730-000' })
   @IsString()
-  @MinLength(3)
   billFromCode!: string;
 
   @ApiProperty({ description: 'Sender country.', example: 'Brazil' })
   @IsString()
-  @MinLength(3)
   billFromCountry!: string;
 
   @ApiProperty({
@@ -90,7 +83,6 @@ export class CreatePendingDto {
     example: 'Suzuki Corporation',
   })
   @IsString()
-  @MinLength(3)
   billToName!: string;
 
   @ApiProperty({
@@ -98,7 +90,6 @@ export class CreatePendingDto {
     example: 'contact@suzuki.jp',
   })
   @IsString()
-  @MinLength(3)
   billToEmail!: string;
 
   @ApiProperty({
@@ -106,21 +97,17 @@ export class CreatePendingDto {
     example: '456 Sakura Street',
   })
   @IsString()
-  @MinLength(3)
   billToStreet!: string;
 
   @ApiProperty({ description: 'Recipient city.', example: 'Osaka' })
   @IsString()
-  @MinLength(3)
   billToCity!: string;
 
   @ApiProperty({ description: 'Recipient postal code.', example: '530-0001' })
   @IsString()
-  @MinLength(3)
   billToCode!: string;
 
   @ApiProperty({ description: 'Recipient country.', example: 'Japan' })
   @IsString()
-  @MinLength(3)
   billToCountry!: string;
 }

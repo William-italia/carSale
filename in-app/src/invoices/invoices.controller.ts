@@ -75,7 +75,7 @@ export class InvoicesController {
     @CurrentUser() currentUser: TokenPayloadDto,
     @Param('id') id: string,
     @Body() body: UpdateInvoiceDto,
-  ): Promise<void> {
+  ): Promise<InvoiceResponseDto> {
     return this.invoiceService.update(currentUser, id, body);
   }
 }

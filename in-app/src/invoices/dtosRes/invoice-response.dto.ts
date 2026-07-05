@@ -21,6 +21,10 @@ export class InvoiceResponseDto {
   })
   invoiceDate!: Date;
 
+  @ApiProperty({
+    description: 'Identifier of the selected payment term',
+    example: 3,
+  })
   paymentTerm!: number;
 
   @ApiProperty({

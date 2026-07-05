@@ -17,7 +17,9 @@ import { CreatePendingDto } from './dtos/create-pending.dto';
 import { CreateItemData } from './types/create-item.data';
 import { UpdateInvoiceDto } from './dtos/update-invoice.dto';
 import { UpdateItemDto } from './dtos/update-item.dto';
-import { InvoiceItemEntity } from './entities/invoice-item.entity';
+import { CreateInvoiceOperation } from './types/create-operation.data';
+import { InvoiceItemOperations } from './types/items-organize.data';
+import { UpdateItemData } from './types/update-item.data';
 
 @Injectable()
 export class InvoicesService {
@@ -61,15 +63,20 @@ export class InvoicesService {
     return InvoiceMapper.toSummaryResponseDto(newInvoice);
   }
 
+  // trocar create para transaction tbm, e refatorar os metodos create
+
   async createPending(
     user: TokenPayloadDto,
     dto: CreatePendingDto,
   ): Promise<InvoiceSummaryResponseDto> {
+
     const data: CreateInvoiceData = await this.buildInvoiceData(
       user.sub,
       InvoiceStatus.PENDING,
       dto,
     );
+
+    this.validatePending(data, dto.items);
 
     const newInvoice = await this.invoiceRepository.create(data);
     await this.invoiceRepository.createManyItems(
@@ -83,66 +90,52 @@ export class InvoicesService {
     user: TokenPayloadDto,
     invoiceId: string,
     dto: UpdateInvoiceDto,
-  ) {
+  ): Promise<InvoiceResponseDto> {
     const invoice = await this.invoiceRepository.findById(user.sub, invoiceId);
 
     if (!invoice) throw new NotFoundException('Invoice not found!');
 
     switch (invoice.status) {
       case InvoiceStatus.DRAFT:
-        return this.updateDraft(invoice, dto);
-
       case InvoiceStatus.PENDING:
-        return this.updatePending(invoice, dto);
+        return this.executeUpdateInvoice(invoice, dto);
+
 
       default:
         throw new BadRequestException('Invoice cannot be updated.');
     }
   }
 
-  private async updateDraft(invoice: InvoiceEntity, dto: UpdateInvoiceDto) {
+   private async executeUpdateInvoice(invoice: InvoiceEntity, dto: UpdateInvoiceDto): Promise<InvoiceResponseDto> {
+
     const data = await this.buildInvoiceData(
       invoice.userId,
       invoice.status,
       dto,
       invoice,
     );
-
     const { items } = dto;
 
-    const itemsOrganized = this.organizeItems(items, invoice);
+      
+    if(invoice.status === 'pending') this.validatePending(data, items);
+    
+    const itemsOrganized = this.organizeItems(items, invoice);    
 
-    // falta a parte do repo
-    /*
-    {
-    data,
-    items
+    const op: CreateInvoiceOperation = {
+      data: data,
+      items: itemsOrganized,
+      invoiceId: invoice.id,
     }
-    transaction =>
-    updateData
-    sincronizar os items -> removeItems -> createItems -> updateItems
-    */
+  
+    const invoiceUpdated = await this.invoiceRepository.update(op);
+
+    if(!invoiceUpdated) throw new NotFoundException('Invoice not found!');
+
+    return InvoiceMapper.toResponse(invoiceUpdated);
   }
 
-  private async updatePending(invoice: InvoiceEntity, dto: UpdateInvoiceDto) {
-    dto.invoiceDate = invoice.invoiceDate;
-    const data = await this.buildInvoiceData(
-      invoice.userId,
-      invoice.status,
-      dto,
-      invoice,
-    );
 
-    const { items } = dto;
-
-    this.validateUpdatePending(data, items);
-
-    const itemsOrganized = this.organizeItems(items, invoice);
-
-    //falta a parte do repo
-  }
-
-  private validateUpdatePending(
+  private validatePending(
     data: CreateInvoiceData,
     items: CreateItemDto[],
   ) {
@@ -177,7 +170,7 @@ export class InvoicesService {
     }
   }
 
-  private organizeItems(items: UpdateItemDto[], invoice: InvoiceEntity) {
+  private organizeItems(items: UpdateItemDto[], invoice: InvoiceEntity): InvoiceItemOperations {
     const { items: invoiceItems } = invoice;
 
     const dbIdItems = invoiceItems.map((i) => i.id);
@@ -187,15 +180,15 @@ export class InvoicesService {
     const removeItemsID = dbIdItems.filter(
       (id) => !currentIdItems.includes(id),
     );
-    const updateItems = items.filter((i) => i.id);
+    const updateItems = items.filter((item): item is UpdateItemData => item.id !== undefined);
     const addItems = this.buildItems(newItems, invoice.id);
 
     this.validateUpdateItemsIds(dbIdItems, updateItems);
 
     return {
-      removeIds: removeItemsID,
-      updateItems: updateItems,
-      newItems: addItems,
+      remove: removeItemsID,
+      update: updateItems,
+      create: addItems,
     };
   }
 

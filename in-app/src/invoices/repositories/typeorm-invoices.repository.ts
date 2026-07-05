@@ -1,20 +1,21 @@
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { DataSource } from 'typeorm/browser';
 import { InvoicesRepositoryContract } from './invoices.repository';
 import { InvoiceEntity } from '../entities/invoice.entity';
 import { InvoiceItemEntity } from '../entities/invoice-item.entity';
 import { PaymentTermsEntity } from '../entities/payment_terms.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateInvoiceData } from '../types/create-invoice.data';
 import { CreateItemData } from '../types/create-item.data';
+import { UpdateInvoiceData } from '../types/update-invoice.data';
 
 @Injectable()
 export class TypeOrmInvoicesRepository extends InvoicesRepositoryContract {
   constructor(
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
+
     @InjectRepository(InvoiceEntity)
     private readonly invoiceOrmRepository: Repository<InvoiceEntity>,
 
@@ -83,6 +84,42 @@ export class TypeOrmInvoicesRepository extends InvoicesRepositoryContract {
     const items = this.invoiceItemsOrmRepository.create(data);
     return this.invoiceItemsOrmRepository.save(items);
   }
+
+
+
+  async update(data: UpdateInvoiceData): Promise<InvoiceEntity | null> {
+    return this.dataSource.transaction(async (manager) => {
+      await manager.update(InvoiceEntity, data.invoiceId, data.data);
+    
+      if (data.items.remove.length) {
+        await manager.delete(InvoiceItemEntity, data.items.remove);
+      }
+
+      if (data.items.create.length) {
+        await manager.insert(InvoiceItemEntity, data.items.create);
+      }
+
+      if (data.items.update.length) {
+        for (const item of data.items.update) {
+          await manager.update(InvoiceItemEntity, item.id, {
+            name: item.name,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+          });
+        }
+      }
+
+      return manager.findOne(InvoiceEntity, {
+        where: {id: data.invoiceId},
+        relations: {
+          items: true,
+        },
+      });
+
+    });
+  }
+
+
 
   async existsCode(code: string): Promise<boolean> {
     return this.invoiceOrmRepository.exists({

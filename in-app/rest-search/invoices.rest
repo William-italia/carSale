@@ -52,7 +52,7 @@ Content-Type: application/json
 {
   "invoiceDate": "2026-07-04T19:30:00.000Z",
   "projectDescription": "Desenvolvimento de uma plataforma de faturas",
-  "billFromName": "William Italia",
+  "billFromName": "asd",
   "billFromEmail": "william@hotmail.com",
   "billFromStreet": "rua dos pessegos",
   "billFromCity": "São Paulo",
@@ -87,8 +87,8 @@ Content-Type: application/json
 {
     "invoiceDate": "2026-06-27T19:30:00.000Z", 
     "paymentTermId": 2, 
-    "projectDescription": "",
-    "billFromName": "william",
+    "projectDescription": "my project",
+    "billFromName": "asd",
     "billFromEmail": "william@hotmail.com",
     "billFromStreet": "rua dos morangos",
     "billFromCity": "japan",
@@ -101,12 +101,6 @@ Content-Type: application/json
     "billToCode": "2222-1111",
     "billToCountry": "Japão",
     "items": [
-      {
-        "id": 3,
-        "name": "API REST",
-        "quantity": 1,
-        "unitPrice": 1500
-      },
       {
         "name": "new item",
         "quantity": 1,
