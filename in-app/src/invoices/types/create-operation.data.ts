@@ -1,8 +1,8 @@
-import { CreateInvoiceData } from './create-invoice.data';
+import { InvoiceData } from './invoice.data';
 import { InvoiceItemOperations } from './items-organize.data';
 
 export type CreateInvoiceOperation = {
-  data: CreateInvoiceData;
+  data: InvoiceData;
   items: InvoiceItemOperations;
   invoiceId: string;
 };

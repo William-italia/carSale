@@ -1,4 +1,3 @@
-import { UpdateItemDto } from '../dtos/update-item.dto';
 import { CreateItemData } from './create-item.data';
 import { UpdateItemData } from './update-item.data';
 

@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Patch,
@@ -15,11 +14,10 @@ import { AuthGuard } from '@src/auth/auth.guard';
 import { CurrentUser } from '@src/auth/params/token-payload.param';
 import { TokenPayloadDto } from '@src/auth/dtos/token-payload.dto';
 import { InvoiceResponseDto } from './dtosRes/invoice-response.dto';
-import { Token } from 'typescript';
-import { CreateDraftDto } from './dtos/create-draft.dto';
-import { CreatePendingDto } from './dtos/create-pending.dto';
 import { InvoiceSummaryResponseDto } from './dtosRes/invoice-summary-response.dto';
 import { UpdateInvoiceDto } from './dtos/update-invoice.dto';
+import { InvoiceStatus } from './enums/invoice-status.enum';
+import { CreateInvoiceDto } from './dtos/create-invoice.dto';
 
 @UseGuards(AuthGuard)
 @ApiTags('Invoices')
@@ -54,10 +52,10 @@ export class InvoicesController {
   @Post('draft')
   async createDraft(
     @CurrentUser() currentUser: TokenPayloadDto,
-    @Body() body: CreateDraftDto,
+    @Body() body: CreateInvoiceDto,
   ): Promise<InvoiceSummaryResponseDto> {
     // console.log(body);
-    return this.invoiceService.createDraft(currentUser, body);
+    return this.invoiceService.create(currentUser, body, InvoiceStatus.DRAFT);
   }
 
   // create invoice pending
@@ -65,9 +63,9 @@ export class InvoicesController {
   @ApiOkResponse({ type: InvoiceSummaryResponseDto })
   async createPending(
     @CurrentUser() currentUser: TokenPayloadDto,
-    @Body() body: CreatePendingDto,
+    @Body() body: CreateInvoiceDto,
   ): Promise<InvoiceSummaryResponseDto> {
-    return this.invoiceService.createPending(currentUser, body);
+    return this.invoiceService.create(currentUser, body, InvoiceStatus.PENDING);
   }
 
   @Patch(':id')
