@@ -1,6 +1,7 @@
-import { InvoiceEntity } from '../entities/invoice.entity';
+import { CreateItemData } from './create-item.data';
+import { InvoiceData } from './invoice.data';
 
-export type CreateInvoiceData = Omit<
-  InvoiceEntity,
-  'id' | 'createdAt' | 'updatedAt' | 'paymentTerm' | 'user' | 'items'
->;
+export type CreateInvoiceData = {
+  data: InvoiceData;
+  items: CreateItemData[];
+};

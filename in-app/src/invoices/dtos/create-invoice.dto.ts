@@ -1,18 +1,16 @@
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
-  ArrayMinSize,
   IsArray,
   IsDate,
   IsInt,
   IsOptional,
   IsString,
-  MinLength,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CreateItemDto } from './create-item.dto';
 
-export class CreatePendingDto {
+export class CreateInvoiceDto {
   @ApiProperty({
     description: 'Invoice issue date.',
     example: '2026-07-03T10:00:00.000Z',
@@ -24,8 +22,6 @@ export class CreatePendingDto {
   @ApiProperty({
     description: 'Payment terms identifier.',
     example: 2,
-    minimum: 1,
-    maximum: 4,
   })
   @IsInt()
   paymentTermId!: number;
@@ -35,7 +31,6 @@ export class CreatePendingDto {
     type: () => [CreateItemDto],
   })
   @IsArray()
-  @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => CreateItemDto)
   items!: CreateItemDto[];
@@ -50,64 +45,76 @@ export class CreatePendingDto {
 
   @ApiProperty({ description: 'Sender name.', example: 'William Italia' })
   @IsString()
-  billFromName!: string;
+  @IsOptional()
+  billFromName?: string;
 
   @ApiProperty({
     description: 'Sender email address.',
     example: 'william@example.com',
   })
   @IsString()
-  billFromEmail!: string;
+  @IsOptional()
+  billFromEmail?: string;
 
   @ApiProperty({
     description: 'Sender street address.',
     example: '123 Main Street',
   })
   @IsString()
-  billFromStreet!: string;
+  @IsOptional()
+  billFromStreet?: string;
 
   @ApiProperty({ description: 'Sender city.', example: 'São Paulo' })
   @IsString()
-  billFromCity!: string;
+  @IsOptional()
+  billFromCity?: string;
 
   @ApiProperty({ description: 'Sender postal code.', example: '11730-000' })
   @IsString()
-  billFromCode!: string;
+  @IsOptional()
+  billFromCode?: string;
 
   @ApiProperty({ description: 'Sender country.', example: 'Brazil' })
   @IsString()
-  billFromCountry!: string;
+  @IsOptional()
+  billFromCountry?: string;
 
   @ApiProperty({
     description: 'Recipient name.',
     example: 'Suzuki Corporation',
   })
   @IsString()
-  billToName!: string;
+  @IsOptional()
+  billToName?: string;
 
   @ApiProperty({
     description: 'Recipient email address.',
     example: 'contact@suzuki.jp',
   })
   @IsString()
-  billToEmail!: string;
+  @IsOptional()
+  billToEmail?: string;
 
   @ApiProperty({
     description: 'Recipient street address.',
     example: '456 Sakura Street',
   })
   @IsString()
-  billToStreet!: string;
+  @IsOptional()
+  billToStreet?: string;
 
   @ApiProperty({ description: 'Recipient city.', example: 'Osaka' })
   @IsString()
-  billToCity!: string;
+  @IsOptional()
+  billToCity?: string;
 
   @ApiProperty({ description: 'Recipient postal code.', example: '530-0001' })
   @IsString()
-  billToCode!: string;
+  @IsOptional()
+  billToCode?: string;
 
   @ApiProperty({ description: 'Recipient country.', example: 'Japan' })
   @IsString()
-  billToCountry!: string;
+  @IsOptional()
+  billToCountry?: string;
 }

@@ -5,7 +5,7 @@ import { InvoiceEntity } from '../entities/invoice.entity';
 import { InvoiceItemEntity } from '../entities/invoice-item.entity';
 import { PaymentTermsEntity } from '../entities/payment_terms.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateInvoiceData } from '../types/create-invoice.data';
 import { CreateItemData } from '../types/create-item.data';
 import { UpdateInvoiceData } from '../types/update-invoice.data';
@@ -75,22 +75,41 @@ export class TypeOrmInvoicesRepository extends InvoicesRepositoryContract {
     return invoice;
   }
 
+  // async create(data: CreateInvoiceData): Promise<InvoiceEntity> {
+  //   const invoice = this.invoiceOrmRepository.create(data);
+  //   return this.invoiceOrmRepository.save(invoice);
+  // }
+
+  // createManyItems(data: CreateItemData[]): Promise<InvoiceItemEntity[]> {
+  //   const items = this.invoiceItemsOrmRepository.create(data);
+  //   return this.invoiceItemsOrmRepository.save(items);
+  // }
+
   async create(data: CreateInvoiceData): Promise<InvoiceEntity> {
-    const invoice = this.invoiceOrmRepository.create(data);
-    return this.invoiceOrmRepository.save(invoice);
+    return this.dataSource.transaction(async (manager) => {
+      const result = await manager.insert(InvoiceEntity, data.data);
+
+      const invoiceId = result.identifiers[0].id;
+
+      if (data.items.length) {
+        const items = data.items.map((item) => ({
+          ...item,
+          invoiceId,
+        }));
+
+        await manager.insert(InvoiceItemEntity, items);
+      }
+
+      return manager.findOneOrFail(InvoiceEntity, {
+        where: { id: invoiceId },
+      });
+    });
   }
-
-  createManyItems(data: CreateItemData[]): Promise<InvoiceItemEntity[]> {
-    const items = this.invoiceItemsOrmRepository.create(data);
-    return this.invoiceItemsOrmRepository.save(items);
-  }
-
-
 
   async update(data: UpdateInvoiceData): Promise<InvoiceEntity | null> {
     return this.dataSource.transaction(async (manager) => {
       await manager.update(InvoiceEntity, data.invoiceId, data.data);
-    
+
       if (data.items.remove.length) {
         await manager.delete(InvoiceItemEntity, data.items.remove);
       }
@@ -110,16 +129,13 @@ export class TypeOrmInvoicesRepository extends InvoicesRepositoryContract {
       }
 
       return manager.findOne(InvoiceEntity, {
-        where: {id: data.invoiceId},
+        where: { id: data.invoiceId },
         relations: {
           items: true,
         },
       });
-
     });
   }
-
-
 
   async existsCode(code: string): Promise<boolean> {
     return this.invoiceOrmRepository.exists({

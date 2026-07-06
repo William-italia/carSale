@@ -8,18 +8,18 @@ import { InvoiceEntity } from './entities/invoice.entity';
 import { InvoiceMapper } from './mappers/invoice-mapper';
 import { TokenPayloadDto } from '@src/auth/dtos/token-payload.dto';
 import { InvoiceResponseDto } from './dtosRes/invoice-response.dto';
-import { CreateDraftDto } from './dtos/create-draft.dto';
 import { InvoiceSummaryResponseDto } from './dtosRes/invoice-summary-response.dto';
 import { InvoiceStatus } from './enums/invoice-status.enum';
-import { CreateInvoiceData } from './types/create-invoice.data';
+import { InvoiceData } from './types/invoice.data';
 import { CreateItemDto } from './dtos/create-item.dto';
-import { CreatePendingDto } from './dtos/create-pending.dto';
 import { CreateItemData } from './types/create-item.data';
 import { UpdateInvoiceDto } from './dtos/update-invoice.dto';
 import { UpdateItemDto } from './dtos/update-item.dto';
 import { CreateInvoiceOperation } from './types/create-operation.data';
 import { InvoiceItemOperations } from './types/items-organize.data';
 import { UpdateItemData } from './types/update-item.data';
+import { CreateInvoiceData } from './types/create-invoice.data';
+import { CreateInvoiceDto } from './dtos/create-invoice.dto';
 
 @Injectable()
 export class InvoicesService {
@@ -42,46 +42,25 @@ export class InvoicesService {
     return InvoiceMapper.toResponse(invoice);
   }
 
-  async createDraft(
+  async create(
     user: TokenPayloadDto,
-    dto: CreateDraftDto,
-  ): Promise<InvoiceSummaryResponseDto> {
-    const data: CreateInvoiceData = await this.buildInvoiceData(
+    dto: CreateInvoiceDto,
+    status: InvoiceStatus,
+  ) {
+    const data: InvoiceData = await this.buildInvoiceData(
       user.sub,
-      InvoiceStatus.DRAFT,
+      status,
       dto,
     );
 
-    const newInvoice = await this.invoiceRepository.create(data);
+    if (status === InvoiceStatus.PENDING) this.validatePending(data, dto.items);
 
-    if (dto.items.length > 0) {
-      await this.invoiceRepository.createManyItems(
-        this.buildItems(dto.items, newInvoice.id),
-      );
-    }
+    const createInvoice: CreateInvoiceData = {
+      data,
+      items: dto.items,
+    };
 
-    return InvoiceMapper.toSummaryResponseDto(newInvoice);
-  }
-
-  // trocar create para transaction tbm, e refatorar os metodos create
-
-  async createPending(
-    user: TokenPayloadDto,
-    dto: CreatePendingDto,
-  ): Promise<InvoiceSummaryResponseDto> {
-
-    const data: CreateInvoiceData = await this.buildInvoiceData(
-      user.sub,
-      InvoiceStatus.PENDING,
-      dto,
-    );
-
-    this.validatePending(data, dto.items);
-
-    const newInvoice = await this.invoiceRepository.create(data);
-    await this.invoiceRepository.createManyItems(
-      this.buildItems(dto.items, newInvoice.id),
-    );
+    const newInvoice = await this.invoiceRepository.create(createInvoice);
 
     return InvoiceMapper.toSummaryResponseDto(newInvoice);
   }
@@ -100,14 +79,15 @@ export class InvoicesService {
       case InvoiceStatus.PENDING:
         return this.executeUpdateInvoice(invoice, dto);
 
-
       default:
         throw new BadRequestException('Invoice cannot be updated.');
     }
   }
 
-   private async executeUpdateInvoice(invoice: InvoiceEntity, dto: UpdateInvoiceDto): Promise<InvoiceResponseDto> {
-
+  private async executeUpdateInvoice(
+    invoice: InvoiceEntity,
+    dto: UpdateInvoiceDto,
+  ): Promise<InvoiceResponseDto> {
     const data = await this.buildInvoiceData(
       invoice.userId,
       invoice.status,
@@ -116,29 +96,24 @@ export class InvoicesService {
     );
     const { items } = dto;
 
-      
-    if(invoice.status === 'pending') this.validatePending(data, items);
-    
-    const itemsOrganized = this.organizeItems(items, invoice);    
+    if (invoice.status === InvoiceStatus.PENDING) this.validatePending(data, items);
+
+    const itemsOrganized = this.organizeItems(items, invoice);
 
     const op: CreateInvoiceOperation = {
       data: data,
       items: itemsOrganized,
       invoiceId: invoice.id,
-    }
-  
+    };
+
     const invoiceUpdated = await this.invoiceRepository.update(op);
 
-    if(!invoiceUpdated) throw new NotFoundException('Invoice not found!');
+    if (!invoiceUpdated) throw new NotFoundException('Invoice not found!');
 
     return InvoiceMapper.toResponse(invoiceUpdated);
   }
 
-
-  private validatePending(
-    data: CreateInvoiceData,
-    items: CreateItemDto[],
-  ) {
+  private validatePending(data: InvoiceData, items: CreateItemDto[]) {
     const requiredFields = [
       'billFromName',
       'billFromEmail',
@@ -170,7 +145,10 @@ export class InvoicesService {
     }
   }
 
-  private organizeItems(items: UpdateItemDto[], invoice: InvoiceEntity): InvoiceItemOperations {
+  private organizeItems(
+    items: UpdateItemDto[],
+    invoice: InvoiceEntity,
+  ): InvoiceItemOperations {
     const { items: invoiceItems } = invoice;
 
     const dbIdItems = invoiceItems.map((i) => i.id);
@@ -180,7 +158,9 @@ export class InvoicesService {
     const removeItemsID = dbIdItems.filter(
       (id) => !currentIdItems.includes(id),
     );
-    const updateItems = items.filter((item): item is UpdateItemData => item.id !== undefined);
+    const updateItems = items.filter(
+      (item): item is UpdateItemData => item.id !== undefined,
+    );
     const addItems = this.buildItems(newItems, invoice.id);
 
     this.validateUpdateItemsIds(dbIdItems, updateItems);
@@ -224,10 +204,9 @@ export class InvoicesService {
   private async buildInvoiceData(
     userId: string,
     status: InvoiceStatus,
-    dto: CreateDraftDto | CreatePendingDto | UpdateInvoiceDto,
+    dto: CreateInvoiceDto | UpdateInvoiceDto,
     invoice?: InvoiceEntity,
-  ): Promise<CreateInvoiceData> {
- 
+  ): Promise<InvoiceData> {
     const { items, ...fields } = dto;
 
     const dueDate = await this.createDueDate(status, fields, invoice);
@@ -244,7 +223,6 @@ export class InvoicesService {
       subtotal,
       total: subtotal,
     };
-
   }
 
   private normalizeFields<T extends Record<string, any>>(fields: T): T {
@@ -284,7 +262,7 @@ export class InvoicesService {
   ): Promise<Date> {
     const days = Number(await this.invoiceRepository.getDays(paymentTermId));
 
-    if (!days) throw new BadRequestException('Payment term invalid!');
+    if (days === null) throw new BadRequestException('Payment term invalid!');
 
     const dueDate = new Date(invoiceDate);
     dueDate.setDate(dueDate.getDate() + days);
@@ -301,28 +279,27 @@ export class InvoicesService {
     fields: { invoiceDate: Date; paymentTermId: number },
     invoice?: InvoiceEntity,
   ): Promise<Date> {
-    
-    if(!invoice) {
+
+    if (!invoice) {
+      console.log('cai aqui: new date');
       return this.calculateDueDate(fields.invoiceDate, fields.paymentTermId);
     }
-    
-    const paymentChanged = fields.paymentTermId !== invoice?.paymentTermId;
+
+    const paymentChanged = fields.paymentTermId !== invoice.paymentTermId;
     const invoiceDateChanged =
-      fields.invoiceDate.getTime() !== invoice?.invoiceDate.getTime();
+      fields.invoiceDate.getTime() !== invoice.invoiceDate.getTime();
 
-    if (invoice && status === InvoiceStatus.DRAFT && (paymentChanged || invoiceDateChanged)
-    ) {
-      return this.calculateDueDate(
-        fields.invoiceDate,
-        fields.paymentTermId,
-      );
-    }
 
-    if (invoice && status === InvoiceStatus.PENDING && paymentChanged) {
-      return await this.calculateDueDate(
-        fields.invoiceDate,
-        fields.paymentTermId,
-      );
+    switch(status) {
+      case InvoiceStatus.DRAFT:
+        console.log('cai aqui: draft date');
+        if(paymentChanged || invoiceDateChanged) return this.calculateDueDate(fields.invoiceDate, fields.paymentTermId);
+        break;      
+
+      case InvoiceStatus.PENDING:
+        
+        if(paymentChanged) return await this.calculateDueDate(fields.invoiceDate, fields.paymentTermId,);
+        break;      
     }
 
     return invoice.dueDate;

@@ -23,11 +23,11 @@ Content-Type: application/json
   "billFromCity": "",
   "billFromCode": "11730-000",
   "billFromCountry": "Brasil",
-  "billToName": "Suzuki",
-  "billToEmail": "suzuki@hotmail.com",
+  "billToName": "YAMAHA",
+  "billToEmail": "YAMAHA@hotmail.com",
   "billToStreet": "",
   "billToCountry": "",
-  "billToCity": "Osaka",
+  "billToCity": "TOKYO",
   "billToCode": "2222-1111",
   "paymentTermId": 1,
   "items": [
@@ -53,7 +53,7 @@ Content-Type: application/json
   "invoiceDate": "2026-07-04T19:30:00.000Z",
   "projectDescription": "Desenvolvimento de uma plataforma de faturas",
   "billFromName": "asd",
-  "billFromEmail": "william@hotmail.com",
+  "billFromEmail": "asd",
   "billFromStreet": "rua dos pessegos",
   "billFromCity": "São Paulo",
   "billFromCode": "11730-000",
@@ -64,7 +64,7 @@ Content-Type: application/json
   "billToCity": "Osaka",
   "billToCode": "2222-1111",
   "billToCountry": "Japão",
-  "paymentTermId": 1,
+  "paymentTermId": 3,
   "items": [{"name": "API REST", "quantity": 1, "unitPrice": 1500}]
 }
 
@@ -86,7 +86,7 @@ Content-Type: application/json
 
 {
     "invoiceDate": "2026-06-27T19:30:00.000Z", 
-    "paymentTermId": 2, 
+    "paymentTermId": 3, 
     "projectDescription": "my project",
     "billFromName": "asd",
     "billFromEmail": "william@hotmail.com",
