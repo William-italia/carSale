@@ -1,6 +1,51 @@
-@baseUrl = http://localhost:3000
+@baseUrl = http://localhost:3000/users
 @id = 5adfc398-79e5-4526-a178-551202321a39
 @idRemove = 9148ac71-281a-434b-9a57-90cf76d075cc
+
+@token = Bearer {{login.response.body.access_token}}
+
+
+### LOGIN
+# @name login
+POST http://localhost:3000/auth/signIn
+Content-Type: application/json
+
+{
+    "email": "william@hotmail.com",
+    "password": "pass"
+}
+
+### GET ME
+GET {{baseUrl}}/me
+Authorization: {{token}}
+
+
+### UPDATE ME
+PATCH  {{baseUrl}}/me
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+    "name": "Livia Italia"
+}
+
+
+### UPDATE MY PASSWORD
+PATCH  {{baseUrl}}/me/password
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+    "currentPassword": "12345",
+    "newPassword": "pass",
+    "confirmNewPassword": "pass"
+}
+
+### DELETE ME
+DELETE {{baseUrl}}/me
+Authorization: {{token}}
+
+
 
 ### List Users
 GET {{baseUrl}}/users
@@ -16,7 +61,7 @@ Content-Type: application/json
     "email": "williamitalia31@hotmail.com",
     "name": "william",
     "password": "12345",
-    "passwordConfirm": "12345" 
+    "passwordConfirm": "12345" 1
 }
 
 ### Update User

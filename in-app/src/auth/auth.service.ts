@@ -8,9 +8,6 @@ import { UsersRepository } from '@src/users/repositories/users.repository';
 import { RegisterAuthDto } from './dtos/register-auth.dto';
 import { LoginAuthDto } from './dtos/login-auth.dto';
 import { UsersService } from '@src/users/users.service';
-import { UserResponseDto } from '@src/users/dtos/user-response.dto';
-import { UpdatePasswordAuthDto } from './dtos/update-password-auth.dto';
-import { UpdateUserDto } from '@src/users/dtos/update-user.dto';
 import { EmailValidationDto } from './dtos/email-auth.dto';
 import { UpdatePasswordDto } from '@src/users/dtos/update-password.dto';
 import { BcryptHash } from '@src/cryptography/bcrypt-hash.service';
@@ -67,25 +64,7 @@ export class AuthService {
     };
   }
 
-  async find(payload: TokenPayloadDto): Promise<UserResponseDto> {
-    const user = await this.usersService.findOne(payload.sub);
-    return user;
-  }
 
-  async updateUser(
-    payload: TokenPayloadDto,
-    dto: UpdateUserDto,
-  ): Promise<UserResponseDto> {
-    const userUpdated = this.usersService.updateUser(payload.sub, dto);
-    return userUpdated;
-  }
-
-  async updatePassword(
-    payload: TokenPayloadDto,
-    dto: UpdatePasswordAuthDto,
-  ): Promise<void> {
-    await this.usersService.updateOwnPassword(payload.sub, dto);
-  }
 
   async forgotPassword(dto: EmailValidationDto): Promise<string> {
     const user = await this.userRepository.findByEmail(dto.email);
@@ -103,10 +82,6 @@ export class AuthService {
     dto: UpdatePasswordDto,
   ): Promise<void> {
     await this.usersService.updateUserPassword(payload.sub, dto);
-  }
-
-  async delete(payload: TokenPayloadDto): Promise<void> {
-    await this.usersService.remove(payload.sub);
   }
 
   private async validateCredentials(dto: LoginAuthDto): Promise<UserEntity> {

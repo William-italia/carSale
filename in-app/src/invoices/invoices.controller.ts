@@ -10,14 +10,14 @@ import {
 import { ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InvoicesService } from './invoices.service';
 import { InvoiceEntity } from './entities/invoice.entity';
-import { AuthGuard } from '@src/auth/auth.guard';
-import { CurrentUser } from '@src/auth/params/token-payload.param';
 import { TokenPayloadDto } from '@src/auth/dtos/token-payload.dto';
 import { InvoiceResponseDto } from './dtosRes/invoice-response.dto';
 import { InvoiceSummaryResponseDto } from './dtosRes/invoice-summary-response.dto';
 import { UpdateInvoiceDto } from './dtos/update-invoice.dto';
 import { InvoiceStatus } from './enums/invoice-status.enum';
 import { CreateInvoiceDto } from './dtos/create-invoice.dto';
+import { AuthGuard } from '@src/security/auth.guard';
+import { CurrentUser } from '@src/security/currentUser.param';
 
 @UseGuards(AuthGuard)
 @ApiTags('Invoices')
