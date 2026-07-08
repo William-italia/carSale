@@ -105,7 +105,7 @@ export class UsersService {
       throw new UnauthorizedException('Invalid password');
     }
 
-    if (dto.newPassword !== dto.confirmPassword) {
+    if (dto.newPassword !== dto.confirmNewPassword) {
       throw new ConflictException("the passwords don't match");
     }
 
@@ -124,7 +124,7 @@ export class UsersService {
       throw new NotFoundException('User not found!');
     }
 
-    if (dto.newPassword !== dto.confirmPassword) {
+    if (dto.newPassword !== dto.confirmNewPassword) {
       throw new ConflictException('Passwords dont match');
     }
 

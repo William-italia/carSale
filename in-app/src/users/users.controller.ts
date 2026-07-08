@@ -6,6 +6,9 @@ import {
   Delete,
   Param,
   Body,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FindUserParamDto } from '@users/dtos/find-user-params.dto';
@@ -21,13 +24,58 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiParam,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { AuthGuard } from '@src/security/auth.guard';
+import { CurrentUser } from '@src/security/currentUser.param';
+import { TokenPayloadDto } from '@src/auth/dtos/token-payload.dto';
+import { UpdatePasswordAuthDto } from '@src/auth/dtos/update-password-auth.dto';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @UseGuards(AuthGuard)
+  @Get('me')
+  @ApiResponse({ type: UserResponseDto })
+  me(@CurrentUser() currentUser: TokenPayloadDto): Promise<UserResponseDto> {
+    return this.usersService.findOne(currentUser.sub);
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('me')
+  @ApiResponse({ type: UserResponseDto })
+  updateMe(
+    @CurrentUser() currentUser: TokenPayloadDto,
+    @Body() body: UpdateUserDto,
+  ): Promise<UserResponseDto> {
+    return this.usersService.updateUser(currentUser.sub, body);
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('me/password')
+  @ApiResponse({
+    status: 200,
+    description: 'Password updated successfully',
+  })
+  changePassword(
+    @CurrentUser() currentUser: TokenPayloadDto,
+    @Body() body: UpdatePasswordAuthDto,
+  ): Promise<void> {
+    return this.usersService.updateOwnPassword(currentUser.sub, body);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('me')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiResponse({ description: 'User successfully removed!' })
+  deleteMe(@CurrentUser() currentUser: TokenPayloadDto): Promise<void> {
+    return this.usersService.remove(currentUser.sub);
+  }
+
+  // endpoints for administration
 
   @Get()
   @ApiOkResponse({ type: ListUsersResponseDto })

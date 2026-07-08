@@ -7,7 +7,7 @@ POST {{baseUrl}}/signUp
 Content-Type: application/json
 
 {
-    "email": "vanessa@hotmail.com",
+    "email": "vanessa1@hotmail.com",
     "name": "vanessa",
     "password": "12345",
     "confirmPassword": "12345"
@@ -21,8 +21,8 @@ POST {{baseUrl}}/signIn
 Content-Type: application/json
 
 {
-    "email": "livia@hotmail.com",
-    "password": "12345"
+    "email": "william@hotmail.com",
+    "password": "pass"
 }
 
 
@@ -41,36 +41,7 @@ Authorization: {{token}}
 Content-Type: application/json
 
 {
-    "newPassword": "pass",
-    "confirmPassword": "pass"
+    "newPassword": "1234",
+    "confirmNewPassword": "1234"
 }
 
-### GET ME
-GET {{baseUrl}}/me
-Authorization: {{token}}
-
-
-### UPDATE ME
-PATCH  {{baseUrl}}/me
-Authorization: {{token}}
-Content-Type: application/json
-
-{
-    "name": "Livia Italia"
-}
-
-
-### UPDATE MY PASSWORD
-PATCH  {{baseUrl}}/me/password
-Authorization: {{token}}
-Content-Type: application/json
-
-{
-    "currentPassword": "12345",
-    "newPassword": "123456",
-    "confirmPassword": "123456"
-}
-
-### DELETE ME
-DELETE {{baseUrl}}/me
-Authorization: {{token}}

@@ -9,6 +9,7 @@ import { InvoicesModule } from './invoices/invoices.module';
 import { InvoiceEntity } from './invoices/entities/invoice.entity';
 import { InvoiceItemEntity } from './invoices/entities/invoice-item.entity';
 import { PaymentTermsEntity } from './invoices/entities/payment_terms.entity';
+import { SecurityModule } from './security/security.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PaymentTermsEntity } from './invoices/entities/payment_terms.entity';
     CryptographyModule,
     AuthModule,
     InvoicesModule,
+    SecurityModule,
   ],
 })
 export class AppModule {}

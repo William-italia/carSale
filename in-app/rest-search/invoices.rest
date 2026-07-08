@@ -15,7 +15,7 @@ Authorization: {{token}}
 Content-Type: application/json
 
 {
-  "invoiceDate": "2026-07-05T19:30:00.000Z",
+  "invoiceDate": "2026-07-12T19:30:00.000Z",
   "projectDescription": "Desenvolvimento de uma plataforma de faturas",
   "billFromName": "William Italia",
   "billFromEmail": "william@hotmail.com",
@@ -76,7 +76,7 @@ Content-Type: application/json
 
 {
     "email": "william@hotmail.com",
-    "password": "12345"
+    "password": "pass"
 }
 
 ### update

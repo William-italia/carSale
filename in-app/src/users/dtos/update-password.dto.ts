@@ -25,5 +25,5 @@ export class UpdatePasswordDto {
   @IsString()
   @MinLength(4)
   @MaxLength(14)
-  confirmPassword!: string;
+  confirmNewPassword!: string;
 }

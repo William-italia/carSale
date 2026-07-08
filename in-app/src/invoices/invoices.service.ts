@@ -96,7 +96,8 @@ export class InvoicesService {
     );
     const { items } = dto;
 
-    if (invoice.status === InvoiceStatus.PENDING) this.validatePending(data, items);
+    if (invoice.status === InvoiceStatus.PENDING)
+      this.validatePending(data, items);
 
     const itemsOrganized = this.organizeItems(items, invoice);
 
@@ -279,7 +280,6 @@ export class InvoicesService {
     fields: { invoiceDate: Date; paymentTermId: number },
     invoice?: InvoiceEntity,
   ): Promise<Date> {
-
     if (!invoice) {
       console.log('cai aqui: new date');
       return this.calculateDueDate(fields.invoiceDate, fields.paymentTermId);
@@ -289,17 +289,23 @@ export class InvoicesService {
     const invoiceDateChanged =
       fields.invoiceDate.getTime() !== invoice.invoiceDate.getTime();
 
-
-    switch(status) {
+    switch (status) {
       case InvoiceStatus.DRAFT:
         console.log('cai aqui: draft date');
-        if(paymentChanged || invoiceDateChanged) return this.calculateDueDate(fields.invoiceDate, fields.paymentTermId);
-        break;      
+        if (paymentChanged || invoiceDateChanged)
+          return this.calculateDueDate(
+            fields.invoiceDate,
+            fields.paymentTermId,
+          );
+        break;
 
       case InvoiceStatus.PENDING:
-        
-        if(paymentChanged) return await this.calculateDueDate(fields.invoiceDate, fields.paymentTermId,);
-        break;      
+        if (paymentChanged)
+          return await this.calculateDueDate(
+            fields.invoiceDate,
+            fields.paymentTermId,
+          );
+        break;
     }
 
     return invoice.dueDate;

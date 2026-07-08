@@ -5,12 +5,12 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { TokenPayloadDto } from '@src/auth/dtos/token-payload.dto';
 import { Request } from 'express';
 import jwtConfig from './config/jwt.config';
-import type { ConfigType } from '@nestjs/config';
-import { TokenPayloadDto } from './dtos/token-payload.dto';
-import { TOKEN_PAYLOAD_KEY } from './auth-constants';
+import { TOKEN_PAYLOAD_KEY } from './security.constants';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -21,12 +21,10 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request: Request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const req: Request = context.switchToHttp().getRequest();
+    const token = this.extractTokenFromHeader(req);
 
-    if (!token) {
-      throw new UnauthorizedException('Not connected');
-    }
+    if (!token) throw new UnauthorizedException('Not connected!');
 
     try {
       const payload = await this.jwtService.verifyAsync<TokenPayloadDto>(
@@ -34,7 +32,7 @@ export class AuthGuard implements CanActivate {
         this.jwtConfiguration,
       );
 
-      request[TOKEN_PAYLOAD_KEY] = payload;
+      req[TOKEN_PAYLOAD_KEY] = payload;
     } catch (error) {
       console.error(error);
       throw new UnauthorizedException('Login failed');
@@ -43,12 +41,10 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const authAutorization = request.headers?.authorization;
+  private extractTokenFromHeader(req: Request) {
+    const authAutorization = req.headers?.authorization;
 
-    if (!authAutorization || typeof authAutorization !== 'string') {
-      return;
-    }
+    if (!authAutorization || typeof authAutorization !== 'string') return;
 
     const [type, token] = authAutorization.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;

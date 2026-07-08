@@ -1,10 +1,7 @@
 import {
   Controller,
   Post,
-  Get,
-  Patch,
   Body,
-  Delete,
   HttpStatus,
   HttpCode,
   UseGuards,
@@ -14,14 +11,11 @@ import { RegisterAuthDto } from './dtos/register-auth.dto';
 import { AuthService } from './auth.service';
 import { AuthResponseDto } from './dtos/auth-response.dto';
 import { LoginAuthDto } from './dtos/login-auth.dto';
-import { UpdatePasswordAuthDto } from './dtos/update-password-auth.dto';
-import { UpdateUserDto } from '@src/users/dtos/update-user.dto';
-import { UserResponseDto } from '@src/users/dtos/user-response.dto';
 import { EmailValidationDto } from './dtos/email-auth.dto';
 import { UpdatePasswordDto } from '@src/users/dtos/update-password.dto';
-import { AuthGuard } from './auth.guard';
-import { CurrentUser } from './params/token-payload.param';
 import { TokenPayloadDto } from './dtos/token-payload.dto';
+import { AuthGuard } from '@src/security/auth.guard';
+import { CurrentUser } from '@src/security/currentUser.param';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -69,43 +63,5 @@ export class AuthController {
     @Body() body: UpdatePasswordDto,
   ) {
     return this.authService.resetPassword(currentUser, body);
-  }
-
-  @UseGuards(AuthGuard)
-  @Get('me')
-  @ApiResponse({ type: UserResponseDto })
-  me(@CurrentUser() currentUser: TokenPayloadDto): Promise<UserResponseDto> {
-    return this.authService.find(currentUser);
-  }
-
-  @UseGuards(AuthGuard)
-  @Patch('me')
-  @ApiResponse({ type: UserResponseDto })
-  updateMe(
-    @CurrentUser() currentUser: TokenPayloadDto,
-    @Body() body: UpdateUserDto,
-  ): Promise<UserResponseDto> {
-    return this.authService.updateUser(currentUser, body);
-  }
-
-  @UseGuards(AuthGuard)
-  @Patch('me/password')
-  @ApiResponse({
-    status: 200,
-    description: 'Password updated successfully',
-  })
-  changePassword(
-    @CurrentUser() currentUser: TokenPayloadDto,
-    @Body() body: UpdatePasswordAuthDto,
-  ): Promise<void> {
-    return this.authService.updatePassword(currentUser, body);
-  }
-
-  @UseGuards(AuthGuard)
-  @Delete('me')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiResponse({ description: 'User successfully removed!' })
-  deleteMe(@CurrentUser() currentUser: TokenPayloadDto): Promise<void> {
-    return this.authService.delete(currentUser);
   }
 }

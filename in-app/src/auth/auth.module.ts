@@ -4,19 +4,12 @@ import { AuthService } from './auth.service';
 import { UsersModule } from '@src/users/users.module';
 import { CryptographyModule } from '@src/cryptography/cryptography.module';
 import { BcryptHash } from '@src/cryptography/bcrypt-hash.service';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule } from '@nestjs/config';
-import jwtConfig from './config/jwt.config';
+import { SecurityModule } from '@src/security/security.module';
 
 @Module({
-  imports: [
-    UsersModule,
-    CryptographyModule,
-    ConfigModule.forFeature(jwtConfig),
-    JwtModule.registerAsync(jwtConfig.asProvider()),
-  ],
+  imports: [UsersModule, CryptographyModule, SecurityModule],
   providers: [AuthService, BcryptHash],
   controllers: [AuthController],
-  exports: [ConfigModule, JwtModule],
+  exports: [],
 })
 export class AuthModule {}
