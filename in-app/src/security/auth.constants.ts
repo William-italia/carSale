@@ -1,0 +1,1 @@
+export const TOKEN_PAYLOAD_KEY = 'TOKEN_PAYLOAD_KEY'

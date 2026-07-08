@@ -69,7 +69,6 @@ export class InvoicesService {
     user: TokenPayloadDto,
     dto: CreatePendingDto,
   ): Promise<InvoiceSummaryResponseDto> {
-
     const data: CreateInvoiceData = await this.buildInvoiceData(
       user.sub,
       InvoiceStatus.PENDING,
@@ -100,14 +99,15 @@ export class InvoicesService {
       case InvoiceStatus.PENDING:
         return this.executeUpdateInvoice(invoice, dto);
 
-
       default:
         throw new BadRequestException('Invoice cannot be updated.');
     }
   }
 
-   private async executeUpdateInvoice(invoice: InvoiceEntity, dto: UpdateInvoiceDto): Promise<InvoiceResponseDto> {
-
+  private async executeUpdateInvoice(
+    invoice: InvoiceEntity,
+    dto: UpdateInvoiceDto,
+  ): Promise<InvoiceResponseDto> {
     const data = await this.buildInvoiceData(
       invoice.userId,
       invoice.status,
@@ -116,29 +116,24 @@ export class InvoicesService {
     );
     const { items } = dto;
 
-      
-    if(invoice.status === 'pending') this.validatePending(data, items);
-    
-    const itemsOrganized = this.organizeItems(items, invoice);    
+    if (invoice.status === 'pending') this.validatePending(data, items);
+
+    const itemsOrganized = this.organizeItems(items, invoice);
 
     const op: CreateInvoiceOperation = {
       data: data,
       items: itemsOrganized,
       invoiceId: invoice.id,
-    }
-  
+    };
+
     const invoiceUpdated = await this.invoiceRepository.update(op);
 
-    if(!invoiceUpdated) throw new NotFoundException('Invoice not found!');
+    if (!invoiceUpdated) throw new NotFoundException('Invoice not found!');
 
     return InvoiceMapper.toResponse(invoiceUpdated);
   }
 
-
-  private validatePending(
-    data: CreateInvoiceData,
-    items: CreateItemDto[],
-  ) {
+  private validatePending(data: CreateInvoiceData, items: CreateItemDto[]) {
     const requiredFields = [
       'billFromName',
       'billFromEmail',
@@ -170,7 +165,10 @@ export class InvoicesService {
     }
   }
 
-  private organizeItems(items: UpdateItemDto[], invoice: InvoiceEntity): InvoiceItemOperations {
+  private organizeItems(
+    items: UpdateItemDto[],
+    invoice: InvoiceEntity,
+  ): InvoiceItemOperations {
     const { items: invoiceItems } = invoice;
 
     const dbIdItems = invoiceItems.map((i) => i.id);
@@ -180,7 +178,9 @@ export class InvoicesService {
     const removeItemsID = dbIdItems.filter(
       (id) => !currentIdItems.includes(id),
     );
-    const updateItems = items.filter((item): item is UpdateItemData => item.id !== undefined);
+    const updateItems = items.filter(
+      (item): item is UpdateItemData => item.id !== undefined,
+    );
     const addItems = this.buildItems(newItems, invoice.id);
 
     this.validateUpdateItemsIds(dbIdItems, updateItems);
@@ -227,7 +227,6 @@ export class InvoicesService {
     dto: CreateDraftDto | CreatePendingDto | UpdateInvoiceDto,
     invoice?: InvoiceEntity,
   ): Promise<CreateInvoiceData> {
- 
     const { items, ...fields } = dto;
 
     const dueDate = await this.createDueDate(status, fields, invoice);
@@ -244,7 +243,6 @@ export class InvoicesService {
       subtotal,
       total: subtotal,
     };
-
   }
 
   private normalizeFields<T extends Record<string, any>>(fields: T): T {
@@ -301,21 +299,20 @@ export class InvoicesService {
     fields: { invoiceDate: Date; paymentTermId: number },
     invoice?: InvoiceEntity,
   ): Promise<Date> {
-    
-    if(!invoice) {
+    if (!invoice) {
       return this.calculateDueDate(fields.invoiceDate, fields.paymentTermId);
     }
-    
+
     const paymentChanged = fields.paymentTermId !== invoice?.paymentTermId;
     const invoiceDateChanged =
       fields.invoiceDate.getTime() !== invoice?.invoiceDate.getTime();
 
-    if (invoice && status === InvoiceStatus.DRAFT && (paymentChanged || invoiceDateChanged)
+    if (
+      invoice &&
+      status === InvoiceStatus.DRAFT &&
+      (paymentChanged || invoiceDateChanged)
     ) {
-      return this.calculateDueDate(
-        fields.invoiceDate,
-        fields.paymentTermId,
-      );
+      return this.calculateDueDate(fields.invoiceDate, fields.paymentTermId);
     }
 
     if (invoice && status === InvoiceStatus.PENDING && paymentChanged) {

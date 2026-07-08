@@ -8,17 +8,14 @@ import { UsersRepository } from '@src/users/repositories/users.repository';
 import { RegisterAuthDto } from './dtos/register-auth.dto';
 import { LoginAuthDto } from './dtos/login-auth.dto';
 import { UsersService } from '@src/users/users.service';
-import { UserResponseDto } from '@src/users/dtos/user-response.dto';
-import { UpdatePasswordAuthDto } from './dtos/update-password-auth.dto';
-import { UpdateUserDto } from '@src/users/dtos/update-user.dto';
 import { EmailValidationDto } from './dtos/email-auth.dto';
 import { UpdatePasswordDto } from '@src/users/dtos/update-password.dto';
 import { BcryptHash } from '@src/cryptography/bcrypt-hash.service';
 import { UserEntity } from '@src/users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { TokenPayloadDto } from './dtos/token-payload.dto';
-import jwtConfig from './config/jwt.config';
 import type { ConfigType } from '@nestjs/config';
+import jwtConfig from '@src/security/config/jwt.config';
 
 @Injectable()
 export class AuthService {
@@ -32,7 +29,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async signUp(dto: RegisterAuthDto): Promise<void> {
+  async register(dto: RegisterAuthDto): Promise<void> {
     await this.usersService.create({
       email: dto.email,
       name: dto.name,
@@ -53,6 +50,7 @@ export class AuthService {
     const accessToken = await this.jwtService.signAsync<TokenPayloadDto>(
       {
         sub: user.id,
+        // role: user.role
       },
       {
         audience: this.jwtConfiguration.audience,
@@ -65,26 +63,6 @@ export class AuthService {
     return {
       access_token: accessToken,
     };
-  }
-
-  async find(payload: TokenPayloadDto): Promise<UserResponseDto> {
-    const user = await this.usersService.findOne(payload.sub);
-    return user;
-  }
-
-  async updateUser(
-    payload: TokenPayloadDto,
-    dto: UpdateUserDto,
-  ): Promise<UserResponseDto> {
-    const userUpdated = this.usersService.updateUser(payload.sub, dto);
-    return userUpdated;
-  }
-
-  async updatePassword(
-    payload: TokenPayloadDto,
-    dto: UpdatePasswordAuthDto,
-  ): Promise<void> {
-    await this.usersService.updateOwnPassword(payload.sub, dto);
   }
 
   async forgotPassword(dto: EmailValidationDto): Promise<string> {
@@ -103,10 +81,6 @@ export class AuthService {
     dto: UpdatePasswordDto,
   ): Promise<void> {
     await this.usersService.updateUserPassword(payload.sub, dto);
-  }
-
-  async delete(payload: TokenPayloadDto): Promise<void> {
-    await this.usersService.remove(payload.sub);
   }
 
   private async validateCredentials(dto: LoginAuthDto): Promise<UserEntity> {

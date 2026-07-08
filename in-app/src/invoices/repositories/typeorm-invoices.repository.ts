@@ -85,12 +85,10 @@ export class TypeOrmInvoicesRepository extends InvoicesRepositoryContract {
     return this.invoiceItemsOrmRepository.save(items);
   }
 
-
-
   async update(data: UpdateInvoiceData): Promise<InvoiceEntity | null> {
     return this.dataSource.transaction(async (manager) => {
       await manager.update(InvoiceEntity, data.invoiceId, data.data);
-    
+
       if (data.items.remove.length) {
         await manager.delete(InvoiceItemEntity, data.items.remove);
       }
@@ -110,16 +108,13 @@ export class TypeOrmInvoicesRepository extends InvoicesRepositoryContract {
       }
 
       return manager.findOne(InvoiceEntity, {
-        where: {id: data.invoiceId},
+        where: { id: data.invoiceId },
         relations: {
           items: true,
         },
       });
-
     });
   }
-
-
 
   async existsCode(code: string): Promise<boolean> {
     return this.invoiceOrmRepository.exists({

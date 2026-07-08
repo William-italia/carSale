@@ -11,15 +11,14 @@ import {
 import { ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InvoicesService } from './invoices.service';
 import { InvoiceEntity } from './entities/invoice.entity';
-import { AuthGuard } from '@src/auth/auth.guard';
-import { CurrentUser } from '@src/auth/params/token-payload.param';
 import { TokenPayloadDto } from '@src/auth/dtos/token-payload.dto';
 import { InvoiceResponseDto } from './dtosRes/invoice-response.dto';
-import { Token } from 'typescript';
 import { CreateDraftDto } from './dtos/create-draft.dto';
 import { CreatePendingDto } from './dtos/create-pending.dto';
 import { InvoiceSummaryResponseDto } from './dtosRes/invoice-summary-response.dto';
 import { UpdateInvoiceDto } from './dtos/update-invoice.dto';
+import { CurrentUser } from '@src/security/currentUser.param';
+import { AuthGuard } from '@src/security/auth.guard';
 
 @UseGuards(AuthGuard)
 @ApiTags('Invoices')
