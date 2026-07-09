@@ -33,5 +33,3 @@ export class UpdateUserDto {
   // in the future, there will be an avatar/image field
 }
 
-// começar a ver parte de segurança pra implementar o jwt, -> vai fazer
-// fazer a parte do /me com id mesmo por enquanto dps é só trocar  [x]

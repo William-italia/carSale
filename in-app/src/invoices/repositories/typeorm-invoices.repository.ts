@@ -7,7 +7,6 @@ import { PaymentTermsEntity } from '../entities/payment_terms.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
 import { CreateInvoiceData } from '../types/create-invoice.data';
-import { CreateItemData } from '../types/create-item.data';
 import { UpdateInvoiceData } from '../types/update-invoice.data';
 
 @Injectable()

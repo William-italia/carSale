@@ -14,8 +14,8 @@ import { BcryptHash } from '@src/cryptography/bcrypt-hash.service';
 import { UserEntity } from '@src/users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { TokenPayloadDto } from './dtos/token-payload.dto';
-import jwtConfig from './config/jwt.config';
 import type { ConfigType } from '@nestjs/config';
+import jwtConfig from '@src/security/config/jwt.config';
 
 @Injectable()
 export class AuthService {

@@ -1,5 +1,5 @@
 .env
-
+in-app/db.sqlite
 # compiled output
 /dist
 /node_modules

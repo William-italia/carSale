@@ -34,7 +34,6 @@ export class AuthGuard implements CanActivate {
 
       req[TOKEN_PAYLOAD_KEY] = payload;
     } catch (error) {
-      console.error(error);
       throw new UnauthorizedException('Login failed');
     }
 

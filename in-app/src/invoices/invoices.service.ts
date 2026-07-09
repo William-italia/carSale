@@ -8,7 +8,6 @@ import { InvoiceEntity } from './entities/invoice.entity';
 import { InvoiceMapper } from './mappers/invoice-mapper';
 import { TokenPayloadDto } from '@src/auth/dtos/token-payload.dto';
 import { InvoiceResponseDto } from './dtosRes/invoice-response.dto';
-import { InvoiceSummaryResponseDto } from './dtosRes/invoice-summary-response.dto';
 import { InvoiceStatus } from './enums/invoice-status.enum';
 import { InvoiceData } from './types/invoice.data';
 import { CreateItemDto } from './dtos/create-item.dto';

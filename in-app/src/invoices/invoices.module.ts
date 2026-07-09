@@ -7,7 +7,6 @@ import { InvoiceItemEntity } from './entities/invoice-item.entity';
 import { PaymentTermsEntity } from './entities/payment_terms.entity';
 import { InvoicesRepositoryContract } from './repositories/invoices.repository';
 import { TypeOrmInvoicesRepository } from './repositories/typeorm-invoices.repository';
-import { AuthModule } from '@src/auth/auth.module';
 import { SecurityModule } from '@src/security/security.module';
 
 @Module({
