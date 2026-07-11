@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { HashService } from './hash.service';
+import { IBcryptService } from './bcrypt.service';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class BcryptHash extends HashService {
-  hash(password: string): Promise<string> {
-    return bcrypt.hash(password, 10);
+export class bcryptHash extends IBcryptService {
+
+  hash(value: string): Promise<string> {
+    return bcrypt.hash(value, 10);
   }
 
-  compare(password: string, hash: string): Promise<boolean> {
-    return bcrypt.compare(password, hash);
+  compare(value: string, hash: string): Promise<boolean> {
+    return bcrypt.compare(value, hash);
   }
+
 }

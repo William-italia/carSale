@@ -9,7 +9,11 @@ import { CryptographyModule } from '@src/cryptography/cryptography.module';
 import { SecurityModule } from '@src/security/security.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity]), CryptographyModule, SecurityModule],
+  imports: [
+    TypeOrmModule.forFeature([UserEntity]),
+    CryptographyModule,
+    SecurityModule,
+  ],
   providers: [
     UsersService,
     {

@@ -1,32 +1,17 @@
 import {
   Controller,
   Get,
-  Post,
   Patch,
   Delete,
-  Param,
   Body,
   UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { FindUserParamDto } from '@users/dtos/find-user-params.dto';
-import {
-  ListUsersResponseDto,
-  UserResponseDto,
-} from '@users/dtos/user-response.dto';
+import { UserResponseDto } from '@users/dtos/user-response.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { CreateUserDto } from './dtos/create-user.dto';
-import {
-  ApiBody,
-  ApiCreatedResponse,
-  ApiNoContentResponse,
-  ApiOkResponse,
-  ApiParam,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@src/security/auth.guard';
 import { CurrentUser } from '@src/security/currentUser.param';
 import { TokenPayloadDto } from '@src/auth/dtos/token-payload.dto';
@@ -35,13 +20,13 @@ import { UpdatePasswordAuthDto } from '@src/auth/dtos/update-password-auth.dto';
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly userService: UsersService) {}
 
   @UseGuards(AuthGuard)
   @Get('me')
   @ApiResponse({ type: UserResponseDto })
   me(@CurrentUser() currentUser: TokenPayloadDto): Promise<UserResponseDto> {
-    return this.usersService.findOne(currentUser.sub);
+    return this.userService.findOne(currentUser.sub);
   }
 
   @UseGuards(AuthGuard)
@@ -51,7 +36,7 @@ export class UsersController {
     @CurrentUser() currentUser: TokenPayloadDto,
     @Body() body: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    return this.usersService.updateUser(currentUser.sub, body);
+    return this.userService.updateUser(currentUser.sub, body);
   }
 
   @UseGuards(AuthGuard)
@@ -64,7 +49,7 @@ export class UsersController {
     @CurrentUser() currentUser: TokenPayloadDto,
     @Body() body: UpdatePasswordAuthDto,
   ): Promise<void> {
-    return this.usersService.updateOwnPassword(currentUser.sub, body);
+    return this.userService.updateOwnPassword(currentUser.sub, body);
   }
 
   @UseGuards(AuthGuard)
@@ -72,15 +57,15 @@ export class UsersController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiResponse({ description: 'User successfully removed!' })
   deleteMe(@CurrentUser() currentUser: TokenPayloadDto): Promise<void> {
-    return this.usersService.remove(currentUser.sub);
+    return this.userService.remove(currentUser.sub);
   }
 
   // endpoints for administration
-
+  /*
   @Get()
   @ApiOkResponse({ type: ListUsersResponseDto })
   findAllUsers(): Promise<ListUsersResponseDto> {
-    return this.usersService.find();
+    return this.userService.find();
   }
 
   @Get(':id')
@@ -92,14 +77,14 @@ export class UsersController {
   })
   @ApiOkResponse({ type: UserResponseDto })
   findUser(@Param() param: FindUserParamDto): Promise<UserResponseDto> {
-    return this.usersService.findOne(param.id);
+    return this.userService.findOne(param.id);
   }
 
   @Post()
   @ApiBody({ type: CreateUserDto })
   @ApiCreatedResponse({ type: UserResponseDto })
   createUser(@Body() body: CreateUserDto): Promise<UserResponseDto> {
-    return this.usersService.create(body);
+    return this.userService.create(body);
   }
 
   @Patch(':id')
@@ -115,7 +100,7 @@ export class UsersController {
     @Param() param: FindUserParamDto,
     @Body() body: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    return this.usersService.updateUser(param.id, body);
+    return this.userService.updateUser(param.id, body);
   }
 
   @Delete(':id')
@@ -127,6 +112,7 @@ export class UsersController {
   })
   @ApiNoContentResponse({ description: 'User removed with successfully' })
   removeUser(@Param() param: FindUserParamDto): Promise<void> {
-    return this.usersService.remove(param.id);
+    return this.userService.remove(param.id);
   }
+  */
 }

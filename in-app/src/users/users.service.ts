@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ConflictException,
-  HttpStatus,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -12,17 +11,18 @@ import {
   UserResponseDto,
 } from './dtos/user-response.dto';
 import { UserMapper } from './mappers/user-mapper';
-import { HashService } from '@src/cryptography/hash.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UpdatePasswordDto } from './dtos/update-password.dto';
 import { UpdatePasswordAuthDto } from '@src/auth/dtos/update-password-auth.dto';
+import { UserRoles } from './enums/user-roles.enum';
+import { IBcryptService } from '@src/cryptography/bcrypt.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly userRepository: UsersRepository,
-    private readonly bcrypt: HashService,
+    private readonly bcrypt: IBcryptService,
   ) {}
 
   async find(): Promise<ListUsersResponseDto> {
@@ -44,17 +44,16 @@ export class UsersService {
     if (await this.userRepository.findByEmail(dto.email))
       throw new ConflictException('Email already exists!');
 
-    if (dto.password != dto.confirmPassword) {
+    if (dto.password != dto.confirmPassword)
       throw new ConflictException('Passwords dont match');
-    }
 
     const user = await this.userRepository.create({
       email: dto.email,
       name: dto.name,
       passwordHash: await this.bcrypt.hash(dto.password),
-      // TODO: refresh token hash
-      tokenHash: null,
+      tokenHash: null, // tokenHash is set at login
       active: true,
+      role: UserRoles.USER,
     });
 
     return UserMapper.toResponseDto(user);
@@ -87,6 +86,16 @@ export class UsersService {
     return UserMapper.toResponseDto(updated);
   }
 
+  async updateTokenHash(id: string, refreshToken: string): Promise<void> {
+    const user = await this.userRepository.findById(id);
+
+    if (!user) throw new NotFoundException('User not found!');
+
+    await this.userRepository.update(user, {
+      tokenHash: await this.bcrypt.hash(refreshToken),
+    });
+  }
+
   async updateOwnPassword(
     id: string,
     dto: UpdatePasswordAuthDto,
@@ -94,11 +103,7 @@ export class UsersService {
     const user = await this.userRepository.findById(id);
 
     if (!user) {
-      throw new NotFoundException({
-        message: 'User not found!',
-        statusCode: HttpStatus.NOT_FOUND,
-        timestamp: new Date().toISOString(),
-      });
+      throw new NotFoundException('User not found!');
     }
 
     if (!(await this.bcrypt.compare(dto.currentPassword, user.passwordHash))) {
@@ -112,6 +117,19 @@ export class UsersService {
     await this.userRepository.update(user, {
       passwordHash: await this.bcrypt.hash(dto.newPassword),
     });
+
+    // todo: logout
+    return;
+  }
+
+  async remove(id: string): Promise<void> {
+    const user = await this.userRepository.findById(id);
+
+    if (!user) {
+      throw new NotFoundException('User not found!');
+    }
+
+    await this.userRepository.remove(user);
 
     return;
   }
@@ -131,18 +149,6 @@ export class UsersService {
     await this.userRepository.update(user, {
       passwordHash: await this.bcrypt.hash(dto.newPassword),
     });
-
-    return;
-  }
-
-  async remove(id: string): Promise<void> {
-    const user = await this.userRepository.findById(id);
-
-    if (!user) {
-      throw new NotFoundException('User not found!');
-    }
-
-    await this.userRepository.remove(user);
 
     return;
   }

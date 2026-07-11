@@ -2,7 +2,11 @@
 @id = 5adfc398-79e5-4526-a178-551202321a39
 @idRemove = 9148ac71-281a-434b-9a57-90cf76d075cc
 
-@token = Bearer {{login.response.body.access_token}}
+@token = Bearer {{login.response.body.accessToken}}
+@newToken = Bearer {{refresh.response.body.accessToken}}
+
+
+@refreshToken = Bearer {{login.response.body.refreshToken}}
 
 
 ### LOGIN
@@ -12,12 +16,18 @@ Content-Type: application/json
 
 {
     "email": "william@hotmail.com",
-    "password": "pass"
+    "password": "1234"
 }
+
+###
+# @name refresh
+POST http://localhost:3000/auth/refresh-token
+Authorization: {{refreshToken}}
+
 
 ### GET ME
 GET {{baseUrl}}/me
-Authorization: {{token}}
+Authorization: {{newToken}}
 
 
 ### UPDATE ME
@@ -26,7 +36,7 @@ Authorization: {{token}}
 Content-Type: application/json
 
 {
-    "name": "Livia Italia"
+    "name": "william Italia"
 }
 
 
@@ -36,7 +46,7 @@ Authorization: {{token}}
 Content-Type: application/json
 
 {
-    "currentPassword": "12345",
+    "currentPassword": "1234",
     "newPassword": "pass",
     "confirmNewPassword": "pass"
 }

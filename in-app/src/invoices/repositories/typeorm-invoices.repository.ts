@@ -74,16 +74,6 @@ export class TypeOrmInvoicesRepository extends InvoicesRepositoryContract {
     return invoice;
   }
 
-  // async create(data: CreateInvoiceData): Promise<InvoiceEntity> {
-  //   const invoice = this.invoiceOrmRepository.create(data);
-  //   return this.invoiceOrmRepository.save(invoice);
-  // }
-
-  // createManyItems(data: CreateItemData[]): Promise<InvoiceItemEntity[]> {
-  //   const items = this.invoiceItemsOrmRepository.create(data);
-  //   return this.invoiceItemsOrmRepository.save(items);
-  // }
-
   async create(data: CreateInvoiceData): Promise<InvoiceEntity> {
     return this.dataSource.transaction(async (manager) => {
       const result = await manager.insert(InvoiceEntity, data.data);

@@ -3,12 +3,12 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UsersModule } from '@src/users/users.module';
 import { CryptographyModule } from '@src/cryptography/cryptography.module';
-import { BcryptHash } from '@src/cryptography/bcrypt-hash.service';
 import { SecurityModule } from '@src/security/security.module';
+import { TokenService } from '@src/security/token.service';
 
 @Module({
   imports: [UsersModule, CryptographyModule, SecurityModule],
-  providers: [AuthService, BcryptHash],
+  providers: [AuthService, TokenService],
   controllers: [AuthController],
   exports: [],
 })

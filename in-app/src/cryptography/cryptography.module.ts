@@ -1,14 +1,20 @@
 import { Module } from '@nestjs/common';
-import { HashService } from './hash.service';
-import { BcryptHash } from './bcrypt-hash.service';
+import { IBcryptService } from './bcrypt.service';
+import { bcryptHash } from './bcrypt-hash.service';
+import { ICryptoService } from './crypto.service';
+import { CryptoHash } from './crypto-hash.service';
 
 @Module({
   providers: [
     {
-      provide: HashService,
-      useClass: BcryptHash,
+      provide: IBcryptService,
+      useClass: bcryptHash,
+    },
+    {
+      provide: ICryptoService,
+      useClass: CryptoHash,
     },
   ],
-  exports: [HashService],
+  exports: [IBcryptService, ICryptoService],
 })
 export class CryptographyModule {}

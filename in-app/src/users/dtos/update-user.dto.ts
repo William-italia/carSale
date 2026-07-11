@@ -9,6 +9,7 @@ import {
 } from 'class-validator';
 
 export class UpdateUserDto {
+  // email, name, _avatar
   @ApiProperty({
     description: 'The email of user',
     example: 'john@example.com',
@@ -32,4 +33,3 @@ export class UpdateUserDto {
 
   // in the future, there will be an avatar/image field
 }
-

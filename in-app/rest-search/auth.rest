@@ -1,32 +1,37 @@
 @baseUrl = http://localhost:3000/auth
-@token = Bearer {{login.response.body.access_token}}
+@token = Bearer {{login.response.body.accessToken}}
+@newToken = Bearer {{refresh.response.body.accessToken}}
 
+@refreshToken = Bearer {{login.response.body.refreshToken}}
+
+@jwt = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4ODM1MmJhOS02MWI0LTQ3ZjctOTQwYS1kYzE4NTQ3NTU4MmEiLCJyb2xlcyI6WyJ1c2VyIl0sImlhdCI6MTc4MzcyMjg3NywiZXhwIjoxNzg0MzI3Njc3LCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAifQ.dReG56a7pouOCfwn5juXCICqaAFgoDNIxN2fXpkEveQ
 
 ### REGISTER
 POST {{baseUrl}}/signUp
 Content-Type: application/json
 
 {
-    "email": "vanessa1@hotmail.com",
-    "name": "vanessa",
-    "password": "12345",
-    "confirmPassword": "12345"
+    "email": "william@hotmail.com",
+    "name": "william",
+    "password": "1234",
+    "confirmPassword": "1234"
 }
-
 
 ### LOGIN
 # @name login
-
 POST {{baseUrl}}/signIn
 Content-Type: application/json
 
 {
     "email": "william@hotmail.com",
-    "password": "pass"
+    "password": "1234"
 }
 
-
-### FORGOT PASSWORD
+###
+# @name refresh
+POST {{baseUrl}}/refresh
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzNmIwOWFjZC1hZTViLTQwODctYmU1Yy0zMjNmZmJkMWQ0ODIiLCJyb2xlcyI6WyJ1c2VyIl0sImp0aSI6IjUxYjI1NWMzLThmZmEtNDIxNy04NzcwLTQ4ZTlhNzdlNzkwMyIsImlhdCI6MTc4MzgwMTk1NSwiZXhwIjoxNzg0NDA2NzU1LCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAifQ.HGvGPNyiKpgX4MPUd_6-zzSB2hgtgfuLkPyQOOMi0BE
+###
 
 POST {{baseUrl}}/forgot-password
 Content-Type: application/json

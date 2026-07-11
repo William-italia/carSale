@@ -13,4 +13,6 @@ export abstract class UsersRepository {
   abstract create(body: CreateUserData): Promise<UserEntity>;
   abstract update(user: UserEntity, body: UpdateUserData): Promise<UserEntity>;
   abstract remove(user: UserEntity): Promise<void>;
+
+  abstract getTokenHash(id: string): Promise<string | null>;
 }

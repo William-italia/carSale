@@ -46,6 +46,21 @@ export class TypeOrmUsersRepository extends UsersRepository {
     return this.repository.save(user);
   }
 
+  async getTokenHash(id: string): Promise<string | null> {
+    const token = await this.repository.findOne({
+      where: {
+        id: id,
+      },
+      select: {
+        tokenHash: true,
+      },
+    });
+
+    if (!token) return null;
+
+    return token?.tokenHash;
+  }
+
   async remove(user: UserEntity): Promise<void> {
     await this.repository.remove(user);
   }

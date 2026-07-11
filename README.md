@@ -5,7 +5,6 @@ A RESTful API for invoice management built with NestJS, TypeScript, and TypeORM.
 This project was developed to practice backend architecture, business rules, authentication, data validation, and relational database modeling using modern development practices.
 
 ---
-
 ## Features
 
 - User authentication with JWT
@@ -32,25 +31,6 @@ This project was developed to practice backend architecture, business rules, aut
 - Swagger
 - class-validator
 - class-transformer
-
----
-
-## Project Structure
-
-```
-src/
-├── auth/
-├── invoices/
-│   ├── controllers
-│   ├── dtos
-│   ├── entities
-│   ├── mappers
-│   ├── repositories
-│   ├── services
-│   └── types
-├── users/
-└── ...
-```
 
 ---
 
@@ -99,15 +79,25 @@ npm install
 Configure your environment variables:
 
 ```env
-DATABASE_URL=
+DATABASE_TYPE=
+DATABASE_HOST=
+DATABASE_PORT=
+DATABASE_USERNAME=
+DATABASE_DATABASE=
+DATABASE_PASSWORD=
+DATABASE_AUTOLOADENTITIES
+DATABASE_SYNCHRONIZE
+
+---- 
+
 JWT_SECRET=
+JWT_REFRESH_SECRET=
+JWT_TOKEN_AUDIENCIE=
+JWT_TOKEN_ISSUER=
+JWT_TTL=
+JWT_REFRESH_TTL=
 ```
 
-Run migrations:
-
-```bash
-npm run typeorm migration:run
-```
 
 Start the server:
 
@@ -118,7 +108,7 @@ npm run start:dev
 ---
 
 ## Future Improvements
-
+- migrations
 - Unit tests
 - Integration tests
 - Docker support

@@ -5,6 +5,7 @@ import {
   HttpStatus,
   HttpCode,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RegisterAuthDto } from './dtos/register-auth.dto';
@@ -16,11 +17,16 @@ import { UpdatePasswordDto } from '@src/users/dtos/update-password.dto';
 import { TokenPayloadDto } from './dtos/token-payload.dto';
 import { AuthGuard } from '@src/security/auth.guard';
 import { CurrentUser } from '@src/security/currentUser.param';
+import type { Request } from 'express';
+import { TokenService } from '@src/security/token.service';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly tokenService: TokenService,
+  ) {}
 
   // signUp
   @Post('signUp')
@@ -35,14 +41,16 @@ export class AuthController {
   @Post('signIn')
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, type: AuthResponseDto })
-  signIn(@Body() body: LoginAuthDto): Promise<{ access_token: string }> {
+  signIn(@Body() body: LoginAuthDto): Promise<AuthResponseDto> {
     return this.authService.signIn(body);
   }
 
-  @Post('refresh-token')
+  @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, type: AuthResponseDto })
-  refreshToken() {}
+  refreshToken(@Req() req: Request): Promise<unknown> {
+    return this.tokenService.refresh(req);
+  }
 
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)

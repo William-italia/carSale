@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
 } from 'typeorm';
+import { UserRoles } from '../enums/user-roles.enum';
 
 @Entity('users')
 export class UserEntity {
@@ -29,6 +30,12 @@ export class UserEntity {
     default: 'placeholder',
   })
   tokenHash!: string | null;
+
+  @Column({
+    type: 'simple-enum',
+    enum: UserRoles,
+  })
+  role!: UserRoles;
 
   // todo: CHANGE THE DEFAULT TO FALSE LATER.
   @Column({ default: true, nullable: true })

@@ -1,5 +1,4 @@
 import {
-  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -10,23 +9,22 @@ import { LoginAuthDto } from './dtos/login-auth.dto';
 import { UsersService } from '@src/users/users.service';
 import { EmailValidationDto } from './dtos/email-auth.dto';
 import { UpdatePasswordDto } from '@src/users/dtos/update-password.dto';
-import { BcryptHash } from '@src/cryptography/bcrypt-hash.service';
 import { UserEntity } from '@src/users/entities/user.entity';
-import { JwtService } from '@nestjs/jwt';
 import { TokenPayloadDto } from './dtos/token-payload.dto';
-import type { ConfigType } from '@nestjs/config';
-import jwtConfig from '@src/security/config/jwt.config';
+import { UserMapper } from '@src/users/mappers/user-mapper';
+import { AuthResponseDto } from './dtos/auth-response.dto';
+import { TokenService } from '@src/security/token.service';
+import { IBcryptService } from '@src/cryptography/bcrypt.service';
+import { ICryptoService } from '@src/cryptography/crypto.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userRepository: UsersRepository,
     private readonly usersService: UsersService,
-    private readonly bcrypt: BcryptHash,
-
-    @Inject(jwtConfig.KEY)
-    private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
-    private readonly jwtService: JwtService,
+    private readonly crypto: ICryptoService,
+    private readonly bcrypt: IBcryptService,
+    private readonly tokenService: TokenService,
   ) {}
 
   async signUp(dto: RegisterAuthDto): Promise<void> {
@@ -41,47 +39,20 @@ export class AuthService {
     return;
   }
 
-  async signIn(dto: LoginAuthDto): Promise<{ access_token: string }> {
+  async signIn(dto: LoginAuthDto): Promise<AuthResponseDto> {
     const user = await this.validateCredentials(dto);
+    const tokens = await this.tokenService.createTokens(user);
 
-    // TODO
-    // const refreshToken = 'yyyy';
 
-    const accessToken = await this.jwtService.signAsync<TokenPayloadDto>(
-      {
-        sub: user.id,
-      },
-      {
-        audience: this.jwtConfiguration.audience,
-        issuer: this.jwtConfiguration.issuer,
-        secret: this.jwtConfiguration.secret,
-        expiresIn: this.jwtConfiguration.jwtTtl,
-      },
-    );
+     await this.userRepository.update(user, {
+      tokenHash: this.crypto.hash(tokens.refreshToken),
+    });
 
     return {
-      access_token: accessToken,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      user: UserMapper.toResponseDto(user),
     };
-  }
-
-
-
-  async forgotPassword(dto: EmailValidationDto): Promise<string> {
-    const user = await this.userRepository.findByEmail(dto.email);
-
-    if (!user) {
-      throw new NotFoundException('User not found!');
-    }
-
-    // TODO: generate reset token and send email
-    return `Bearer ${user.id}`;
-  }
-
-  async resetPassword(
-    payload: TokenPayloadDto,
-    dto: UpdatePasswordDto,
-  ): Promise<void> {
-    await this.usersService.updateUserPassword(payload.sub, dto);
   }
 
   private async validateCredentials(dto: LoginAuthDto): Promise<UserEntity> {
@@ -101,5 +72,23 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async forgotPassword(dto: EmailValidationDto): Promise<string> {
+    const user = await this.userRepository.findByEmail(dto.email);
+
+    if (!user) {
+      throw new NotFoundException('User not found!');
+    }
+
+    // TODO: generate reset token and send email
+    return `Bearer ${user.id}`;
+  }
+
+  async resetPassword(
+    payload: TokenPayloadDto,
+    dto: UpdatePasswordDto,
+  ): Promise<void> {
+    await this.usersService.updateUserPassword(payload.sub, dto);
   }
 }
